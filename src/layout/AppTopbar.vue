@@ -58,6 +58,12 @@ const isOutsideClicked = (event) => {
 
     return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
 };
+
+const onLogoutClick = () => {
+  localStorage.clear();
+  router.push('/auth/login');
+};
+
 </script>
 
 <template>
@@ -77,16 +83,16 @@ const isOutsideClicked = (event) => {
 
         <div class="layout-topbar-menu" :class="topbarMenuClasses">
             <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
-                <i class="pi pi-calendar"></i>
-                <span>Calendar</span>
-            </button>
-            <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
                 <i class="pi pi-user"></i>
                 <span>Profile</span>
             </button>
             <button @click="onSettingsClick()" class="p-link layout-topbar-button">
                 <i class="pi pi-cog"></i>
                 <span>Settings</span>
+            </button>
+            <button @click="onLogoutClick()" class="p-link layout-topbar-button">
+                <i class="pi pi-power-off"></i>
+                <span>Logout</span>
             </button>
         </div>
     </div>

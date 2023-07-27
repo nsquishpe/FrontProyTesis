@@ -32,14 +32,10 @@ const logoUrl = computed(() => {
                         <label for="password1" class="block text-900 font-medium text-xl mb-2">Contraseña</label>
                         <Password id="password1" v-model="Usuclave" placeholder="Password" :toggleMask="true" class="w-full mb-3" inputClass="w-full" inputStyle="padding:1rem"></Password>
 
-                        <div class="flex align-items-center justify-content-between mb-5 gap-5">
-                            <div class="flex align-items-center">
-                                <Checkbox v-model="checked" id="rememberme1" binary class="mr-2"></Checkbox>
-                                <label for="rememberme1">Remember me</label>
-                            </div>
-                            <a class="font-medium no-underline ml-2 text-right cursor-pointer" style="color: var(--primary-color)">Forgot password?</a>
+                        <Button v-on:click="login" label="Sign In" class="w-full p-3 text-xl mb-3" style="margin-top: 1rem"></Button>
+                        <div v-if="showAlert" class="alert alert-danger" role="alert">
+                          {{ errorMessage }}
                         </div>
-                        <Button v-on:click="login" label="Sign In" class="w-full p-3 text-xl"></Button>
                     </div>
                 </div>
             </div>
@@ -56,19 +52,33 @@ export default {
   data() {
     return {
       Usuidentificacion: '',
-      Usuclave: ''
+      Usuclave: '',
+      showAlert: false,
+      errorMessage: 'Debe completar todos los campos.',
     }
   },
   methods: {
     async login() {
-      let result = await axios.get(
-        `https://localhost:44318/api/SegMaeusuario?usu=${this.Usuidentificacion}&clave=${this.Usuclave}`
-      )
-      if (result.status == 200 && result.data == true) {
-        localStorage.setItem("user-info", JSON.stringify(result.data))
-        this.$router.push({ name: 'dashboard' });
+
+      // Verificar si los campos están vacíos
+      if (this.Usuidentificacion.trim() === '' || this.Usuclave.trim() === '') {
+        this.showAlert = true;
       }
-      console.warn(result)
+      else{
+          let result = await axios.get(
+          `http://localhost/BackProyTesis/api/SegMaeusuario?usu=${this.Usuidentificacion}&clave=${this.Usuclave}`
+        )
+        if (result.status == 200 && result.data == true) {
+          localStorage.setItem("user-info", JSON.stringify(result.data))
+          this.$router.push({ name: 'dashboard' });
+        }
+        else {
+        // Mostrar una alerta si el inicio de sesión falla (esto es opcional)
+          this.showAlert = true;
+          this.errorMessage = 'Usuario o contraseña incorrectos.';
+        }
+        console.warn(result)
+      }
     }
   },
   mounted() {
@@ -95,5 +105,12 @@ export default {
 .pi-eye-slash {
     transform: scale(1.6);
     margin-right: 1rem;
+}
+.alert {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
 }
 </style>
