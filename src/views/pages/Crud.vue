@@ -24,8 +24,18 @@ const statuses = ref([
 
 const productService = new ProductService();
 
-//CAMBIOS NOE
 const clienteService = new ClienteService();
+const cliente = ref({
+    anio: '',
+    cliCodigo: '',
+    cliNombrec: '',
+    cliNombre: '',
+    cliRucide: '',
+    cliDireccion1: '',
+    cliTelefono1: '',
+    cliCorreo: '',
+    cliSaldo: 0,
+});
 
 //Select Anios
 const years = ref(['2018','2019','2020', '2021', '2022', '2023']); // Lista de años como cadenas
@@ -36,12 +46,6 @@ onBeforeMount(() => {
     initFilters();
 });
 
-/*
-onMounted(() => {
-    productService.getProducts().then((data) => (products.value = data));
-});
-*/
-
 // Método para cargar los clientes cuando se enfoca en el Dropdown
 onMounted(() => {
     RefreshClientes();
@@ -49,11 +53,9 @@ onMounted(() => {
 
 // Función para refrescar los clientes con el año seleccionado
 const RefreshClientes = async () => {
-    const selectedYearValue = selectedYear.value.value; // Obtener solo el valor del año seleccionado
-    console.warn(selectedYearValue);
+    const selectedYearValue = selectedYear.value.value; 
     clientes.value = await clienteService.getClientes(selectedYearValue);
 };
-
 
 const openNew = () => {
     product.value = {};
@@ -84,6 +86,39 @@ const saveProduct = () => {
         productDialog.value = false;
         product.value = {};
     }
+};
+
+const saveCliente = async () => {
+  submitted.value = true;
+  if (cliente.value.cliCodigo && cliente.value.cliNombre && cliente.value.cliTelefono1 && cliente.value.cliCorreo && cliente.value.cliDireccion1) {
+    try {
+      // Llamada POST a tu API para crear un nuevo cliente
+      const newCliente = {
+        anio: '2023',
+        cliCodigo: cliente.value.cliCodigo,
+        cliNombrec: cliente.value.cliNombre,
+        cliNombre: cliente.value.cliNombre,
+        cliRucide: cliente.value.cliCodigo,
+        cliDireccion1: cliente.value.cliDireccion1,
+        cliTelefono1: cliente.value.cliTelefono1,
+        cliCorreo: cliente.value.cliCorreo,
+        cliSaldo: 0,
+      };
+      console.warn(newCliente);
+      // Realiza la llamada POST a tu API con el objeto del nuevo cliente
+      //const response = await clienteService.createCliente(newCliente);
+
+      // Por ejemplo:
+      //console.log('Cliente creado:', response);
+
+      // Limpia el formulario y cierra el diálogo
+      productDialog.value = false;
+      product.value = {};
+      submitted.value = false;
+    } catch (error) {
+      console.error('Error al crear el cliente:', error);
+    }
+  }
 };
 
 const editProduct = (editProduct) => {
@@ -153,14 +188,13 @@ const initFilters = () => {
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2">
-                            <Button label="New" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
-                            <Button label="Delete" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
+                            <Button label="Nuevo" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
+                            <Button label="Eliminar" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
                         </div>
                     </template>
 
                     <template v-slot:end>
-                        <FileUpload mode="basic" accept="image/*" :maxFileSize="1000000" label="Import" chooseLabel="Import" class="mr-2 inline-block" />
-                        <Button label="Export" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
+                        <Button label="Exportar" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
                     </template>
                 </Toolbar>
 
@@ -183,7 +217,7 @@ const initFilters = () => {
                             <Dropdown v-model="selectedYear" :options="dropdownYears" optionLabel="label" placeholder="Año" @focus="RefreshClientes" />
                             <span class="block mt-2 md:mt-0 p-input-icon-left">
                                 <i class="pi pi-search" />
-                                <InputText v-model="filters['global'].value" placeholder="Search..." />
+                                <InputText v-model="filters['global'].value" placeholder="Buscar..." />
                             </span>
                         </div>
                     </template>
@@ -227,71 +261,50 @@ const initFilters = () => {
                     </Column>
                 </DataTable>
 
-                <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Product Details" :modal="true" class="p-fluid">
-                    <img :src="'demo/images/product/' + product.image" :alt="product.image" v-if="product.image" width="150" class="mt-0 mx-auto mb-5 block shadow-2" />
+                <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Crear Cliente" :modal="true" class="p-fluid">
                     <div class="field">
-                        <label for="name">Name</label>
-                        <InputText id="name" v-model.trim="product.name" required="true" autofocus :class="{ 'p-invalid': submitted && !product.name }" />
-                        <small class="p-invalid" v-if="submitted && !product.name">Name is required.</small>
+                        <label for="name">Código</label>
+                        <span class="p-input-icon-left">
+                            <i class="pi pi-id-card" />
+                            <InputText v-model.trim="cliente.cliCodigo" required="true" autofocus :class="{ 'p-invalid': submitted && !cliente.cliCodigo }" />
+                            <small class="p-invalid" v-if="submitted && !cliente.cliCodigo">se requiere código </small>
+                        </span>
                     </div>
                     <div class="field">
-                        <label for="description">Description</label>
-                        <Textarea id="description" v-model="product.description" required="true" rows="3" cols="20" />
-                    </div>
-
-                    <div class="field">
-                        <label for="inventoryStatus" class="mb-3">Inventory Status</label>
-                        <Dropdown id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses" optionLabel="label" placeholder="Select a Status">
-                            <template #value="slotProps">
-                                <div v-if="slotProps.value && slotProps.value.value">
-                                    <span :class="'product-badge status-' + slotProps.value.value">{{ slotProps.value.label }}</span>
-                                </div>
-                                <div v-else-if="slotProps.value && !slotProps.value.value">
-                                    <span :class="'product-badge status-' + slotProps.value.toLowerCase()">{{ slotProps.value }}</span>
-                                </div>
-                                <span v-else>
-                                    {{ slotProps.placeholder }}
-                                </span>
-                            </template>
-                        </Dropdown>
-                    </div>
-
-                    <div class="field">
-                        <label class="mb-3">Category</label>
-                        <div class="formgrid grid">
-                            <div class="field-radiobutton col-6">
-                                <RadioButton id="category1" name="category" value="Accessories" v-model="product.category" />
-                                <label for="category1">Accessories</label>
-                            </div>
-                            <div class="field-radiobutton col-6">
-                                <RadioButton id="category2" name="category" value="Clothing" v-model="product.category" />
-                                <label for="category2">Clothing</label>
-                            </div>
-                            <div class="field-radiobutton col-6">
-                                <RadioButton id="category3" name="category" value="Electronics" v-model="product.category" />
-                                <label for="category3">Electronics</label>
-                            </div>
-                            <div class="field-radiobutton col-6">
-                                <RadioButton id="category4" name="category" value="Fitness" v-model="product.category" />
-                                <label for="category4">Fitness</label>
-                            </div>
+                            <label for="name">Nombre</label>
+                            <span class="p-input-icon-left">
+                                <i class="pi pi-user" />
+                                <InputText v-model.trim="cliente.cliNombre" required="true" autofocus :class="{ 'p-invalid': submitted && !cliente.cliNombre }" />
+                                <small class="p-invalid" v-if="submitted && !cliente.cliNombre">se requiere nombre </small>
+                            </span>
                         </div>
+                    <div class="field">
+                        <label for="phone">Teléfono</label>
+                        <span class="p-input-icon-left">
+                            <i class="pi pi-phone" />
+                            <InputText v-model.trim="cliente.cliTelefono1" required="true" autofocus :class="{ 'p-invalid': submitted && !cliente.cliTelefono1 }" />
+                            <small class="p-invalid" v-if="submitted && !cliente.cliTelefono1">se requiere teléfono </small>
+                        </span>
                     </div>
-
-                    <div class="formgrid grid">
-                        <div class="field col">
-                            <label for="price">Price</label>
-                            <InputNumber id="price" v-model="product.price" mode="currency" currency="USD" locale="en-US" :class="{ 'p-invalid': submitted && !product.price }" :required="true" />
-                            <small class="p-invalid" v-if="submitted && !product.price">Price is required.</small>
+                   <div class="field">
+                            <label for="name">Correo Electrónico</label>
+                            <span class="p-input-icon-left">
+                                <i class="pi pi-envelope" />
+                                <InputText v-model.trim="cliente.cliCorreo" required="true" autofocus :class="{ 'p-invalid': submitted && !cliente.cliCorreo }" />
+                                <small class="p-invalid" v-if="submitted && !cliente.cliCorreo">se requiere correo </small>
+                            </span>
                         </div>
-                        <div class="field col">
-                            <label for="quantity">Quantity</label>
-                            <InputNumber id="quantity" v-model="product.quantity" integeronly />
-                        </div>
+                    <div class="field">
+                        <label for="name">Dirección</label>
+                        <span class="p-input-icon-left">
+                            <i class="pi pi-map-marker" />
+                            <InputText v-model.trim="cliente.cliDireccion1" required="true" autofocus :class="{ 'p-invalid': submitted && !cliente.cliDireccion1 }" />
+                            <small class="p-invalid" v-if="submitted && !cliente.cliDireccion1">se requiere dirección </small>
+                        </span>
                     </div>
                     <template #footer>
-                        <Button label="Cancel" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
-                        <Button label="Save" icon="pi pi-check" class="p-button-text" @click="saveProduct" />
+                        <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
+                        <Button label="Guardar" icon="pi pi-check" class="p-button-text" @click="saveCliente" />
                     </template>
                 </Dialog>
 
