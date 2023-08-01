@@ -2,10 +2,11 @@
 import { FilterMatchMode } from 'primevue/api';
 import { ref, onMounted, onBeforeMount } from 'vue';
 import ProductService from '@/service/ProductService';
+import ClienteService from '@/service/ClienteService';
 import { useToast } from 'primevue/usetoast';
 
 const toast = useToast();
-
+const clientes = ref(null);
 const products = ref(null);
 const productDialog = ref(false);
 const deleteProductDialog = ref(false);
@@ -23,15 +24,36 @@ const statuses = ref([
 
 const productService = new ProductService();
 
+//CAMBIOS NOE
+const clienteService = new ClienteService();
+
+//Select Anios
+const years = ref(['2018','2019','2020', '2021', '2022', '2023']); // Lista de años como cadenas
+const selectedYear =  ref({ label: '2023', value: '2023' }); // Valor por defecto del select como cadena
+const dropdownYears = years.value.map(year => ({ label: year, value: year }));
+
 onBeforeMount(() => {
     initFilters();
 });
+
+/*
 onMounted(() => {
     productService.getProducts().then((data) => (products.value = data));
 });
-const formatCurrency = (value) => {
-    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+*/
+
+// Método para cargar los clientes cuando se enfoca en el Dropdown
+onMounted(() => {
+    RefreshClientes();
+});
+
+// Función para refrescar los clientes con el año seleccionado
+const RefreshClientes = async () => {
+    const selectedYearValue = selectedYear.value.value; // Obtener solo el valor del año seleccionado
+    console.warn(selectedYearValue);
+    clientes.value = await clienteService.getClientes(selectedYearValue);
 };
+
 
 const openNew = () => {
     product.value = {};
@@ -144,11 +166,11 @@ const initFilters = () => {
 
                 <DataTable
                     ref="dt"
-                    :value="products"
+                    :value="clientes"
                     v-model:selection="selectedProducts"
                     dataKey="id"
                     :paginator="true"
-                    :rows="10"
+                    :rows="5"
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
@@ -157,7 +179,8 @@ const initFilters = () => {
                 >
                     <template #header>
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                            <h5 class="m-0">Manage Products</h5>
+                            <h5 class="m-0">Administrar Clientes</h5>
+                            <Dropdown v-model="selectedYear" :options="dropdownYears" optionLabel="label" placeholder="Año" @focus="RefreshClientes" />
                             <span class="block mt-2 md:mt-0 p-input-icon-left">
                                 <i class="pi pi-search" />
                                 <InputText v-model="filters['global'].value" placeholder="Search..." />
@@ -166,46 +189,34 @@ const initFilters = () => {
                     </template>
 
                     <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-                    <Column field="code" header="Code" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="cliCodigo" header="Código" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Code</span>
-                            {{ slotProps.data.code }}
+                            {{ slotProps.data.cliCodigo }}
                         </template>
                     </Column>
-                    <Column field="name" header="Name" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="cliNombre" header="Nombre" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Name</span>
-                            {{ slotProps.data.name }}
+                            {{ slotProps.data.cliNombre }}
                         </template>
                     </Column>
-                    <Column header="Image" headerStyle="width:14%; min-width:10rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Image</span>
-                            <img :src="'demo/images/product/' + slotProps.data.image" :alt="slotProps.data.image" class="shadow-2" width="100" />
-                        </template>
-                    </Column>
-                    <Column field="price" header="Price" :sortable="true" headerStyle="width:14%; min-width:8rem;">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Price</span>
-                            {{ formatCurrency(slotProps.data.price) }}
-                        </template>
-                    </Column>
-                    <Column field="category" header="Category" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="cliTelefono1" header="Teléfono" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Category</span>
-                            {{ slotProps.data.category }}
+                            {{ slotProps.data.cliTelefono1 }}
                         </template>
                     </Column>
-                    <Column field="rating" header="Reviews" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="cliCorreo" header="Correo" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Rating</span>
-                            <Rating :modelValue="slotProps.data.rating" :readonly="true" :cancel="false" />
+                            <span class="p-column-title">Category</span>
+                            {{ slotProps.data.cliCorreo }}
                         </template>
                     </Column>
-                    <Column field="inventoryStatus" header="Status" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="cliDireccion1" header="Dirección" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Status</span>
-                            <span :class="'product-badge status-' + (slotProps.data.inventoryStatus ? slotProps.data.inventoryStatus.toLowerCase() : '')">{{ slotProps.data.inventoryStatus }}</span>
+                            <span class="p-column-title">Category</span>
+                            {{ slotProps.data.cliDireccion1 }}
                         </template>
                     </Column>
                     <Column headerStyle="min-width:10rem;">
