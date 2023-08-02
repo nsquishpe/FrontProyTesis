@@ -11,7 +11,10 @@ const router = createRouter({
                 {
                     path: '/',
                     name: 'dashboard',
-                    component: () => import('@/views/Dashboard.vue')
+                    component: () => import('@/views/Dashboard.vue'),
+                    meta:{
+                        needsAuth:true
+                    }
                 },
                 {
                     path: '/uikit/formlayout',
@@ -169,6 +172,25 @@ const router = createRouter({
             component: () => import('@/views/pages/auth/Error.vue')
         }
     ]
+});
+
+// Función para verificar si el usuario está autenticado
+function isAuthenticated() {
+    const user = localStorage.getItem('user-info');
+    return user
+}
+
+router.beforeEach((to, from, next) => {
+    if(to.meta.needsAuth){
+        if(isAuthenticated()){
+            next();
+        }
+        else{
+            next('/auth/login');
+        }
+    } else{
+        next();
+    }
 });
 
 export default router;

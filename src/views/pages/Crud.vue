@@ -16,11 +16,8 @@ const selectedProducts = ref(null);
 const dt = ref(null);
 const filters = ref({});
 const submitted = ref(false);
-const statuses = ref([
-    { label: 'INSTOCK', value: 'instock' },
-    { label: 'LOWSTOCK', value: 'lowstock' },
-    { label: 'OUTOFSTOCK', value: 'outofstock' }
-]);
+
+let campoCodigoNoEditable = false; // Declaración de la variable aquí
 
 const productService = new ProductService();
 
@@ -58,7 +55,8 @@ const RefreshClientes = async () => {
 };
 
 const openNew = () => {
-    product.value = {};
+    campoCodigoNoEditable = false;
+    cliente.value = {};
     submitted.value = false;
     productDialog.value = true;
 };
@@ -68,62 +66,72 @@ const hideDialog = () => {
     submitted.value = false;
 };
 
-const saveProduct = () => {
-    submitted.value = true;
-    if (product.value.name && product.value.name.trim() && product.value.price) {
-        if (product.value.id) {
-            product.value.inventoryStatus = product.value.inventoryStatus.value ? product.value.inventoryStatus.value : product.value.inventoryStatus;
-            products.value[findIndexById(product.value.id)] = product.value;
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
-        } else {
-            product.value.id = createId();
-            product.value.code = createId();
-            product.value.image = 'product-placeholder.svg';
-            product.value.inventoryStatus = product.value.inventoryStatus ? product.value.inventoryStatus.value : 'INSTOCK';
-            products.value.push(product.value);
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
-        }
-        productDialog.value = false;
-        product.value = {};
-    }
-};
-
 const saveCliente = async () => {
   submitted.value = true;
   if (cliente.value.cliCodigo && cliente.value.cliNombre && cliente.value.cliTelefono1 && cliente.value.cliCorreo && cliente.value.cliDireccion1) {
     try {
-      // Llamada POST a tu API para crear un nuevo cliente
-      const newCliente = {
-        anio: '2023',
-        cliCodigo: cliente.value.cliCodigo,
-        cliNombrec: cliente.value.cliNombre,
-        cliNombre: cliente.value.cliNombre,
-        cliRucide: cliente.value.cliCodigo,
-        cliDireccion1: cliente.value.cliDireccion1,
-        cliTelefono1: cliente.value.cliTelefono1,
-        cliCorreo: cliente.value.cliCorreo,
-        cliSaldo: 0,
-      };
-      console.warn(newCliente);
-      // Realiza la llamada POST a tu API con el objeto del nuevo cliente
-      //const response = await clienteService.createCliente(newCliente);
+      
+        const selectedYearValue = selectedYear.value.value; 
+        console.warn(selectedYearValue);
+        console.warn(cliente.value.cliCodigo);
+        const existingCliente = await clienteService.getClienteById(selectedYearValue, cliente.value.cliCodigo);
 
-      // Por ejemplo:
-      //console.log('Cliente creado:', response);
+      if (existingCliente) {
+        // Si el cliente existe, estamos editando
+        const updatedCliente = {
+            anio: '2023',
+            cliCodigo: cliente.value.cliCodigo,
+            cliNombrec: cliente.value.cliNombre,
+            cliNombre: cliente.value.cliNombre,
+            cliRucide: cliente.value.cliCodigo,
+            cliDireccion1: cliente.value.cliDireccion1,
+            cliTelefono1: cliente.value.cliTelefono1,
+            cliCorreo: cliente.value.cliCorreo,
+            cliSaldo: 0,
+        };
+
+        // Realiza la llamada PUT a tu API para actualizar el cliente existente
+        await clienteService.updateCliente(updatedCliente);
+        toast.add({ severity: 'success', summary: 'Exitoso', detail: 'Cliente Actualizado', life: 3000 });
+      } else {
+        // Si el cliente no existe, estamos creando un nuevo cliente
+        const newCliente = {
+            anio: '2023',
+            cliCodigo: cliente.value.cliCodigo,
+            cliNombrec: cliente.value.cliNombre,
+            cliNombre: cliente.value.cliNombre,
+            cliRucide: cliente.value.cliCodigo,
+            cliDireccion1: cliente.value.cliDireccion1,
+            cliTelefono1: cliente.value.cliTelefono1,
+            cliCorreo: cliente.value.cliCorreo,
+            cliSaldo: 0,
+        };
+
+        // Realiza la llamada POST a tu API con el objeto del nuevo cliente
+        const response = await clienteService.createCliente(newCliente);
+        console.log('Cliente creado con ID:', response.id);
+        toast.add({ severity: 'success', summary: 'Exitoso', detail: 'Cliente Creado', life: 3000 });
+      }
+
+      // Actualiza la lista de clientes (si es necesario)
+      RefreshClientes();
 
       // Limpia el formulario y cierra el diálogo
       productDialog.value = false;
-      product.value = {};
+      cliente.value = {}; // Se restablece el objeto cliente para evitar problemas al abrir el diálogo nuevamente.
       submitted.value = false;
     } catch (error) {
-      console.error('Error al crear el cliente:', error);
+      console.error('Error al guardar el cliente:', error);
+      toast.add({ severity: 'error', summary: 'Error', detail: 'Error al guardar el cliente', life: 3000 });
     }
   }
 };
 
-const editProduct = (editProduct) => {
-    product.value = { ...editProduct };
-    console.log(product);
+
+const editCliente = (editCliente) => {
+    cliente.value = { ...editCliente };
+    campoCodigoNoEditable = true; // Deshabilitar el campo de código del cliente
+    console.log(cliente);
     productDialog.value = true;
 };
 
@@ -137,26 +145,6 @@ const deleteProduct = () => {
     deleteProductDialog.value = false;
     product.value = {};
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
-};
-
-const findIndexById = (id) => {
-    let index = -1;
-    for (let i = 0; i < products.value.length; i++) {
-        if (products.value[i].id === id) {
-            index = i;
-            break;
-        }
-    }
-    return index;
-};
-
-const createId = () => {
-    let id = '';
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return id;
 };
 
 const exportCSV = () => {
@@ -255,18 +243,18 @@ const initFilters = () => {
                     </Column>
                     <Column headerStyle="min-width:10rem;">
                         <template #body="slotProps">
-                            <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editProduct(slotProps.data)" />
+                            <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editCliente(slotProps.data)" />
                             <Button icon="pi pi-trash" class="p-button-rounded p-button-warning mt-2" @click="confirmDeleteProduct(slotProps.data)" />
                         </template>
                     </Column>
                 </DataTable>
 
-                <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Crear Cliente" :modal="true" class="p-fluid">
+                <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Detalle Cliente" :modal="true" class="p-fluid">
                     <div class="field">
                         <label for="name">Código</label>
                         <span class="p-input-icon-left">
                             <i class="pi pi-id-card" />
-                            <InputText v-model.trim="cliente.cliCodigo" required="true" autofocus :class="{ 'p-invalid': submitted && !cliente.cliCodigo }" />
+                            <InputText v-model.trim="cliente.cliCodigo" required="true" autofocus :class="{ 'p-invalid': submitted && !cliente.cliCodigo }" :readonly="campoCodigoNoEditable" />
                             <small class="p-invalid" v-if="submitted && !cliente.cliCodigo">se requiere código </small>
                         </span>
                     </div>

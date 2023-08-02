@@ -68,7 +68,6 @@ export default {
           this.$router.push({ name: 'dashboard' });
         }
         else {
-        // Mostrar una alerta si el inicio de sesión falla (esto es opcional)
           this.showAlert = true;
           this.errorMessage = 'Usuario o contraseña incorrectos.';
         }
