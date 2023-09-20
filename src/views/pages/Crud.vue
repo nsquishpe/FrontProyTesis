@@ -1,7 +1,6 @@
 <script setup>
 import { FilterMatchMode } from 'primevue/api';
 import { ref, onMounted, onBeforeMount } from 'vue';
-import ProductService from '@/service/ProductService';
 import ClienteService from '@/service/ClienteService';
 import { useToast } from 'primevue/usetoast';
 
@@ -19,9 +18,8 @@ const submitted = ref(false);
 
 let campoCodigoNoEditable = false; // Declaración de la variable aquí
 
-const productService = new ProductService();
-
 const clienteService = new ClienteService();
+
 const cliente = ref({
     anio: '',
     cliCodigo: '',
@@ -76,7 +74,7 @@ const saveCliente = async () => {
         console.warn(cliente.value.cliCodigo);
         const existingCliente = await clienteService.getClienteById(selectedYearValue, cliente.value.cliCodigo);
 
-      if (existingCliente) {
+      if (existingCliente && campoCodigoNoEditable) {
         // Si el cliente existe, estamos editando
         const updatedCliente = {
             anio: '2023',
@@ -89,11 +87,10 @@ const saveCliente = async () => {
             cliCorreo: cliente.value.cliCorreo,
             cliSaldo: 0,
         };
-
         // Realiza la llamada PUT a tu API para actualizar el cliente existente
         await clienteService.updateCliente(updatedCliente);
         toast.add({ severity: 'success', summary: 'Exitoso', detail: 'Cliente Actualizado', life: 3000 });
-      } else {
+      } else if(!existingCliente && !campoCodigoNoEditable) {
         // Si el cliente no existe, estamos creando un nuevo cliente
         const newCliente = {
             anio: '2023',
@@ -112,8 +109,11 @@ const saveCliente = async () => {
         console.log('Cliente creado con ID:', response.id);
         toast.add({ severity: 'success', summary: 'Exitoso', detail: 'Cliente Creado', life: 3000 });
       }
+      else{
+        toast.add({ severity: 'error', summary: 'Error', detail: 'El cliente ya está registrado', life: 3000 });
+      }
 
-      // Actualiza la lista de clientes (si es necesario)
+      // Actualiza la lista de clientes 
       RefreshClientes();
 
       // Limpia el formulario y cierra el diálogo
@@ -135,16 +135,42 @@ const editCliente = (editCliente) => {
     productDialog.value = true;
 };
 
-const confirmDeleteProduct = (editProduct) => {
-    product.value = editProduct;
+const confirmDeleteProduct = (editCliente) => {
+    cliente.value = editCliente;
     deleteProductDialog.value = true;
+    console.log(cliente);
 };
 
-const deleteProduct = () => {
-    products.value = products.value.filter((val) => val.id !== product.value.id);
+const deleteProduct = async () => {
+    try {
+        const newCliente = {
+            anio: '2023',
+            cliCodigo: cliente.value.cliCodigo,
+            cliNombrec: cliente.value.cliNombre,
+            cliNombre: cliente.value.cliNombre,
+            cliRucide: cliente.value.cliCodigo,
+            cliDireccion1: cliente.value.cliDireccion1,
+            cliTelefono1: cliente.value.cliTelefono1,
+            cliCorreo: cliente.value.cliCorreo,
+            cliSaldo: 0,
+        };
+
+    const response = await clienteService.deleteCliente(newCliente);
+    console.warn(response);
+
+    if (response == true) {
+      toast.add({ severity: 'success', summary: 'Exitoso', detail: 'Cliente Eliminado', life: 3000 });
+      // Actualiza la lista de clientes 
+      RefreshClientes();
+    } else {
+      toast.add({ severity: 'error', summary: 'Error', detail: 'Cliente con ventas registradas, no puede eliminarse.', life: 3000 });
+    }
     deleteProductDialog.value = false;
     product.value = {};
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
+  } catch (error) {
+    console.error('Error al eliminar el cliente:', error);
+    toast.add({ severity: 'error', summary: 'Error', detail: 'Error al eliminar el cliente', life: 3000 });
+  }
 };
 
 const exportCSV = () => {
@@ -178,6 +204,8 @@ const initFilters = () => {
                         <div class="my-2">
                             <Button label="Nuevo" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
                             <Button label="Eliminar" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
+                            <label for="dropdownYears" style="font-weight: bold;">Periodo: </label>
+                            <Dropdown v-model="selectedYear" :options="dropdownYears" optionLabel="label" placeholder="Año" @focus="RefreshClientes" />
                         </div>
                     </template>
 
@@ -189,8 +217,7 @@ const initFilters = () => {
                 <DataTable
                     ref="dt"
                     :value="clientes"
-                    v-model:selection="selectedProducts"
-                    dataKey="id"
+                    :dataKey="cliente.cliCodigo"
                     :paginator="true"
                     :rows="5"
                     :filters="filters"
@@ -202,7 +229,6 @@ const initFilters = () => {
                     <template #header>
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
                             <h5 class="m-0">Administrar Clientes</h5>
-                            <Dropdown v-model="selectedYear" :options="dropdownYears" optionLabel="label" placeholder="Año" @focus="RefreshClientes" />
                             <span class="block mt-2 md:mt-0 p-input-icon-left">
                                 <i class="pi pi-search" />
                                 <InputText v-model="filters['global'].value" placeholder="Buscar..." />
@@ -210,7 +236,12 @@ const initFilters = () => {
                         </div>
                     </template>
 
-                    <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+                    <Column headerStyle="width: 3rem; text-align: center;">
+                        <template #body="slotProps">
+                            <Checkbox v-model="selectedProducts" :value="slotProps.data" />
+                        </template>
+                    </Column>
+
                     <Column field="cliCodigo" header="Código" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Code</span>
@@ -299,25 +330,25 @@ const initFilters = () => {
                 <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="product"
-                            >Are you sure you want to delete <b>{{ product.name }}</b
+                        <span v-if="cliente"
+                            >¿Está seguro de que desea eliminar el registro <b>{{ cliente.cliNombre }}</b
                             >?</span
                         >
                     </div>
                     <template #footer>
                         <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteProductDialog = false" />
-                        <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteProduct" />
+                        <Button label="Si" icon="pi pi-check" class="p-button-text" @click="deleteProduct" />
                     </template>
                 </Dialog>
 
                 <Dialog v-model:visible="deleteProductsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="product">Are you sure you want to delete the selected products?</span>
+                        <span v-if="cliente">¿Está seguro de que desea eliminar los registros seleccionados?</span>
                     </div>
                     <template #footer>
                         <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteProductsDialog = false" />
-                        <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteSelectedProducts" />
+                        <Button label="Si" icon="pi pi-check" class="p-button-text" @click="deleteSelectedProducts" />
                     </template>
                 </Dialog>
             </div>

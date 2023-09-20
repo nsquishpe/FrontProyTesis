@@ -28,7 +28,7 @@ export default class ClienteService {
             return response.data;
         } catch (error) {
             console.error('Error al crear el cliente:', error);
-            throw new Error('Error al crear el cliente.'); // Puedes lanzar una excepción personalizada o manejar el error según tus necesidades
+            throw new Error('Error al crear el cliente.'); 
         }
     }
 
@@ -41,9 +41,22 @@ export default class ClienteService {
             return response.data;
         } catch (error) {
             console.error('Error al actualizar el cliente:', error);
-            throw new Error('Error al actualizar el cliente.'); // Puedes lanzar una excepción personalizada o manejar el error según tus necesidades
+            throw new Error('Error al actualizar el cliente.'); 
         }
     }
+
+    async deleteCliente(cliente) {
+        try {
+            // Realiza la llamada a la API para crear un nuevo cliente
+            const response = await axios.delete(`${this.baseUrl}VenMaecliente`, { data: cliente });
+
+            // Devuelve la respuesta de la API en caso de éxito
+            return response.data;
+        } catch (error) {
+            console.error('Error al crear el cliente:', error);
+            throw new Error('Error al crear el cliente.'); 
+        }
+    }    
 
     async getClienteById(anio, codigo) {
         try {

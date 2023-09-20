@@ -49,6 +49,16 @@ const model = ref([
         to: '/pages',
         items: [
             {
+                label: 'Clientes',
+                icon: 'pi pi-fw pi-user',
+                to: '/pages/crud'
+            },
+            {
+                label: 'Ventas',
+                icon: 'pi pi-fw pi-calculator',
+                to: '/pages/venEncfac'
+            },
+            {
                 label: 'Landing',
                 icon: 'pi pi-fw pi-globe',
                 to: '/landing'
@@ -73,11 +83,6 @@ const model = ref([
                         to: '/auth/access'
                     }
                 ]
-            },
-            {
-                label: 'Crud',
-                icon: 'pi pi-fw pi-pencil',
-                to: '/pages/crud'
             },
             {
                 label: 'Timeline',

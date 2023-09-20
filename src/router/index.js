@@ -11,10 +11,7 @@ const router = createRouter({
                 {
                     path: '/',
                     name: 'dashboard',
-                    component: () => import('@/views/Dashboard.vue'),
-                    meta:{
-                        needsAuth:true
-                    }
+                    component: () => import('@/views/Dashboard.vue')
                 },
                 {
                     path: '/uikit/formlayout',
@@ -140,6 +137,16 @@ const router = createRouter({
                     component: () => import('@/views/pages/Crud.vue')
                 },
                 {
+                    path: '/pages/venEncfac',
+                    name: 'venEncfac',
+                    component: () => import('@/views/pages/VenEncfac.vue')
+                },
+                {
+                    path: '/pages/VenDetfac',
+                    name: 'venDetfac',
+                    component: () => import('@/views/pages/VenDetfac.vue')
+                },
+                {
                     path: '/documentation',
                     name: 'documentation',
                     component: () => import('@/views/utilities/Documentation.vue')
@@ -181,14 +188,9 @@ function isAuthenticated() {
 }
 
 router.beforeEach((to, from, next) => {
-    if(to.meta.needsAuth){
-        if(isAuthenticated()){
-            next();
-        }
-        else{
-            next('/auth/login');
-        }
-    } else{
+    if (to.path !== '/auth/login' && !isAuthenticated()) {
+        next('/auth/login');
+    } else {
         next();
     }
 });
