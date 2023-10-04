@@ -38,15 +38,28 @@ onMounted(() => {
     RefreshClientes();
 });
 
-const goToVenDetfac = () => {
-  // Navegar a la página VenDetfac
-  router.push({ name: 'venDetfac' }); 
+const goToVenDetfac = (anio, encfacNumero, vhcspcfPlaca) => {
+  anio = anio.value; 
+  // Navegar a la página VenDetfac con parámetros
+  console.warn("Año seleccionado:", anio);
+  console.warn("Número de factura:", encfacNumero);
+  console.warn("Placa:", vhcspcfPlaca);
+  router.push({ name: 'venDetfac', params: { anio, encfacNumero, vhcspcfPlaca } });
 };
+
 
 // Función para refrescar los clientes con el año seleccionado
 const RefreshClientes = async () => {
     const selectedYearValue = selectedYear.value.value; 
     clientes.value = await venEncfacService.modeloAuto(selectedYearValue);
+    // Formatear las fechas en cada objeto dentro de clientes.value utilizando map
+    clientes.value = clientes.value.map(cliente => {
+        if (cliente.encfacFechaemision) {
+            const fecha = new Date(cliente.encfacFechaemision);
+            cliente.encfacFechaemision = fecha.toLocaleDateString(); // Formatea la fecha como 'MM/DD/YYYY' o 'DD/MM/YYYY' dependiendo del idioma del navegador
+        }
+        return cliente;
+    });
 };
 
 const exportCSV = () => {
@@ -138,8 +151,8 @@ const initFilters = () => {
                     </Column>
                     <Column style="width: 15%">
                         <template #header> Visualizar </template>
-                        <template #body>
-                            <Button icon="pi pi-search" type="button" class="p-button-rounded p-button mr-2" @click="goToVenDetfac"></Button>
+                        <template #body="slotProps">
+                            <Button icon="pi pi-search" type="button" class="p-button-rounded p-button mr-2" @click="goToVenDetfac(selectedYear, slotProps.data.encfacNumero, slotProps.data.vhcspcfPlaca)"></Button>
                         </template>
                     </Column>
                 </DataTable>

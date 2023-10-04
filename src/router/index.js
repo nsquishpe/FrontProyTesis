@@ -142,9 +142,10 @@ const router = createRouter({
                     component: () => import('@/views/pages/VenEncfac.vue')
                 },
                 {
-                    path: '/pages/VenDetfac',
+                    path: '/pages/VenDetfac/:anio/:encfacNumero/:vhcspcfPlaca',
                     name: 'venDetfac',
-                    component: () => import('@/views/pages/VenDetfac.vue')
+                    component: () => import('@/views/pages/VenDetfac.vue'),
+                    props: true
                 },
                 {
                     path: '/documentation',

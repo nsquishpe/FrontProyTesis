@@ -1,5 +1,76 @@
+<script setup>
+import { ref, onMounted } from 'vue';
+import VehiculoService from '@/service/VehiculoService';
+import VenEncfacService from '@/service/VenEncfacService';
+import VenDetfacService from '@/service/VenDetfacService';
+const { anio, encfacNumero, vhcspcfPlaca } = defineProps(['anio', 'encfacNumero', 'vhcspcfPlaca']);
+
+console.log("Año:", anio);
+console.log("Número de factura:", encfacNumero);
+console.log("Placa:", vhcspcfPlaca);
+
+const detalles = ref([]);
+
+const venDetfacService = new VenDetfacService();
+const vehiculoService = new VehiculoService();
+const venEncfacService = new VenEncfacService();
+
+const vehiculo = ref({
+  vhcspcfPlaca: '',
+  vhcspcfMarcaDescrip: '',
+  vhcspcfColor: '',
+  vhcspcfChequeo: 0
+});
+
+const encfac = ref({
+    encfacNumero: '',
+    cliNombre: '',
+    cliCodigo: '',
+    usuIdentificacion : '',
+    encfacFechaemision: '',
+    encfacTotal: 0,
+    encfacTotalneto: 0,
+    encfacValoriva: 0
+});
+
+onMounted(async () => {
+  try {
+    // Realiza las llamadas a la API simultáneamente usando Promise.all
+    await Promise.all([
+      GetAuto(),
+      GetEncFac(),
+      GetDetalles()
+    ]);
+    // Las llamadas a la API se han completado
+    console.log('Llamadas a la API completadas');
+  } catch (error) {
+    console.error('Error al obtener datos de la API:', error);
+  }
+});
+
+const GetAuto = async () => {
+    vehiculo.value = await vehiculoService.getVehiculo(anio, vhcspcfPlaca, encfacNumero);
+    console.log(vehiculo.value.vhcspcfChequeo);
+};
+const GetEncFac = async () => {
+    encfac.value = await venEncfacService.getVenEncfacById(anio, encfacNumero);
+    // Formatear la fecha
+    if (encfac.value.encfacFechaemision) {
+        const fecha = new Date(encfac.value.encfacFechaemision);
+        encfac.value.encfacFechaemision = fecha.toLocaleDateString(); // Formatea la fecha como 'MM/DD/YYYY' o 'DD/MM/YYYY' dependiendo del idioma del navegador
+    }
+};
+const GetDetalles = async () => {
+    const response = await venDetfacService.getDetalles(anio, encfacNumero);
+    detalles.value = response.filter(item => item.detfacDescripcion !== null && item.descripcion !== '');
+    console.log(detalles.value);
+};
+
+</script>
+
+
 <template>
-  <div id="invoice">
+  <div id="invoice" >
     <div id="invoice-top">
       <div class="info">
         <Button icon="pi pi-arrow-left" @click="regresar" class="p-button-rounded p-button bg-blue-900 text-white mr-2"></Button>
@@ -7,10 +78,14 @@
       <div class="title">
         <div class="flex items-center mb-3">
           <label class="text-gray-900 text-2xl font-medium mb-0 mr-4">Factura</label>
-          <div class="text-gray-900 text-2xl font-medium mb-0">{{ referenciaDeModelo }}</div>
+          <div class="text-gray-900 text-2xl font-medium mb-0">{{ encfacNumero }}</div>
         </div>
-        <div class="label">Fecha: {{ propietario }}</div>
-        <div class="label">Usuario: {{ propietario }}</div>
+        <div class="label mb-2">
+            <span style="font-weight: bold;">Fecha:</span> {{ encfac.encfacFechaemision }}
+        </div>
+        <div class="label mb-2">
+            <span style="font-weight: bold;">Usuario:</span> {{ encfac.usuIdentificacion }}
+        </div>
       </div>
     </div>
     <div id="invoice-mid">
@@ -21,8 +96,12 @@
           </div>
           <label class="text-black-900 text-2xl font-medium mb-0">Propietario del Vehículo</label>
         </div>
-        <div class="label  mb-2" style="font-weight: bold;">Nombre: {{ propietario }}</div>
-        <div class="label" style="font-weight: bold;">Código: {{ propietario }}</div>
+        <div class="label mb-2">
+            <span style="font-weight: bold;">Nombre:</span> {{ encfac.cliNombre }}
+        </div>
+        <div class="label mb-2">
+            <span style="font-weight: bold;">Código:</span> {{ encfac.cliCodigo }}
+        </div>
       </div>
 
       <div id="project" class="mb-6">
@@ -33,57 +112,52 @@
           <label class="text-black text-2xl font-medium mb-0">Información del Vehículo</label>
         </div>
         <div class="flex justify-between mb-2">
-          <div class="label mr-4" style="font-weight: bold;">Placa: {{ placa }}</div>
-          <div class="label" style="font-weight: bold;">Marca: {{ marca }}</div>
+          <div class="label mr-4">
+              <span style="font-weight: bold;">Placa:</span> {{ vhcspcfPlaca }}
+          </div>
+          <div class="label">
+              <span style="font-weight: bold;">Marca:</span> {{ vehiculo.vhcspcfMarcaDescrip }}
+          </div>
         </div>
         <div class="flex justify-between">
-          <div class="label mr-4" style="font-weight: bold;">Color: {{ color }}</div>
-          <div class="label" style="font-weight: bold;">Kilometraje: {{ kilometraje }}</div>
+          <div class="label mr-4">
+              <span style="font-weight: bold;">Color:</span> {{ vehiculo.vhcspcfColor  }}
+          </div>
+          <div class="label">
+              <span style="font-weight: bold;">Kilometraje:</span> {{ vehiculo.vhcspcfChequeo }}
+          </div>
         </div>
       </div>
     </div>
-    <div id="table">
+    <div id="table" style="border-radius: 10px; overflow: hidden; width: 90%; margin: 0 auto;">
       <DataTable
-            :value="servicios"
+            :value="detalles"
             :paginator="false"
             responsiveLayout="scroll"
           >
             <!-- Definición de las columnas del DataTable -->
-            <Column field="codigo" header="Código" :sortable="false" style="background-color: #e9ecf0; color: #212529;" />
-            <Column field="descripcion" header="Descripción" :sortable="false" style="background-color: #e9ecf0; color: #212529;"/>
-            <Column field="cantidad" header="Cantidad" :sortable="false" style="background-color: #e9ecf0; color: #212529;" />
-            <Column field="precio" header="Precio" :sortable="false" style="background-color: #e9ecf0; color: #212529;"/>
-            <Column field="descuento" header="Descuento" :sortable="false" style="background-color: #e9ecf0; color: #212529;"/>
-            <Column field="total" header="Total" :sortable="false" style="background-color: #e9ecf0; color: #212529;"/>
+            <Column field="detfacTipodet" header="Tipo" :sortable="false"  />
+            <Column field="detfacCodigo" header="Código" :sortable="false" />
+            <Column field="detfacDescripcion" header="Descripción" :sortable="false" />
+            <Column field="detfacCantidad" header="Cantidad" :sortable="false"  />
+            <Column field="detfacPrecio" header="Precio" :sortable="false" />
+            <Column field="detfacDescuento" header="%Descuento" :sortable="false" />
+            <Column field="detfacTotal" header="Total" :sortable="false" />
+            <Column field="detfacEmpleado" header="Tec" :sortable="false"  />
       </DataTable>
     </div>
     <!-- Fila adicional después del DataTable -->
-    <table class="tabletitle" style="text-align: right;">
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td><div class="label" >Total Neto: {{ kilometraje }}</div></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td><div class="label">Valor IVA: {{ kilometraje }}</div></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td><div class="label">TOTAL: {{ kilometraje }}</div></td>
-            <td></td>
-        </tr>
-   </table>
+    <div id="invoice-top" style="text-align: right; max-width: 90%; margin: 0 auto;">
+        <div class="label mb-2">
+            <span style="font-weight: bold;">Total Neto: </span> {{encfac.encfacTotalneto}}
+        </div>
+        <div class="label mb-2">
+            <span style="font-weight: bold;">Valor IVA: </span> {{encfac.encfacValoriva }}
+        </div>
+        <div class="label mb-2">
+            <span style="font-weight: bold;">TOTAL: </span> {{encfac.encfacTotal}}
+        </div>
+    </div>
   </div>
 </template>
 
@@ -166,13 +240,13 @@ p{
 .info{
   display: block;
   float:left;
-  margin-left: 20px;
+  margin-left: 40px;
 }
 .title{
   float: right;
 }
 .title p{text-align: right;}
-#project{margin-left: 52%;}
+#project{margin-left: 57%;}
 table{
   width: 100%;
   border-collapse: collapse;
