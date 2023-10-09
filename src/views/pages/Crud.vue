@@ -203,7 +203,7 @@ const initFilters = () => {
                     <template v-slot:start>
                         <div class="my-2">
                             <Button label="Nuevo" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
-                            <Button label="Eliminar" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
+                            <Button label="Eliminar" icon="pi pi-trash" class="p-button-danger mr-4" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
                             <label for="dropdownYears" style="font-weight: bold;">Periodo: </label>
                             <Dropdown v-model="selectedYear" :options="dropdownYears" optionLabel="label" placeholder="Año" @focus="RefreshClientes" />
                         </div>

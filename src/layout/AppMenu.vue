@@ -59,6 +59,11 @@ const model = ref([
                 to: '/pages/venEncfac'
             },
             {
+                label: 'Inventario',
+                icon: 'pi pi-fw pi-folder',
+                to: '/pages/invMaearticulo'
+            },
+            {
                 label: 'Landing',
                 icon: 'pi pi-fw pi-globe',
                 to: '/landing'

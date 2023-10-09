@@ -148,6 +148,18 @@ const router = createRouter({
                     props: true
                 },
                 {
+                    path: '/pages/invMaearticulo',
+                    name: 'invMaearticulo',
+                    component: () => import('@/views/pages/InvMaearticulo.vue'),
+                    props: true
+                },
+                {
+                    path: '/pages/invKardex/:anio/:artCodigo/:artNombre/:stock',
+                    name: 'invKardex',
+                    component: () => import('@/views/pages/InvKardex.vue'),
+                    props: true
+                },
+                {
                     path: '/documentation',
                     name: 'documentation',
                     component: () => import('@/views/utilities/Documentation.vue')

@@ -41,9 +41,6 @@ onMounted(() => {
 const goToVenDetfac = (anio, encfacNumero, vhcspcfPlaca) => {
   anio = anio.value; 
   // Navegar a la página VenDetfac con parámetros
-  console.warn("Año seleccionado:", anio);
-  console.warn("Número de factura:", encfacNumero);
-  console.warn("Placa:", vhcspcfPlaca);
   router.push({ name: 'venDetfac', params: { anio, encfacNumero, vhcspcfPlaca } });
 };
 
@@ -113,7 +110,7 @@ const initFilters = () => {
                         </div>
                     </template>
 
-                    <Column field="encfacNumero" header="Número" :sortable="false" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="encfacNumero" header="Número" :sortable="false" headerStyle="width:14%; min-width:10rem; ">
                         <template #body="slotProps">
                             <span class="p-column-title">Num</span>
                             {{ slotProps.data.encfacNumero }}
