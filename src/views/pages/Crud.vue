@@ -199,18 +199,17 @@ const initFilters = () => {
         <div class="col-12">
             <div class="card">
                 <Toast />
-                <Toolbar class="mb-4">
+                <Toolbar class="mb-2">
                     <template v-slot:start>
                         <div class="my-2">
-                            <Button label="Nuevo" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
-                            <Button label="Eliminar" icon="pi pi-trash" class="p-button-danger mr-4" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
-                            <label for="dropdownYears" style="font-weight: bold;">Periodo: </label>
+                            <Button label="Nuevo" icon="pi pi-plus" class="p-button-success mr-4" @click="openNew" />
+                            <label for="dropdownYears" style="font-weight: bold;color: black;font-size: 1.05em;" class="mr-1">PERIODO: </label>
                             <Dropdown v-model="selectedYear" :options="dropdownYears" optionLabel="label" placeholder="Año" @focus="RefreshClientes" />
                         </div>
                     </template>
 
                     <template v-slot:end>
-                        <Button label="Exportar" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
+                        <Button label="Exportar" icon="pi pi-upload" class="p-button-secondary" @click="exportCSV($event)" />
                     </template>
                 </Toolbar>
 
@@ -223,11 +222,11 @@ const initFilters = () => {
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+                    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} clientes"
                     responsiveLayout="scroll"
                 >
-                    <template #header>
-                        <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                    <template #header >
+                        <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center" >
                             <h5 class="m-0">Administrar Clientes</h5>
                             <span class="block mt-2 md:mt-0 p-input-icon-left">
                                 <i class="pi pi-search" />
@@ -236,19 +235,13 @@ const initFilters = () => {
                         </div>
                     </template>
 
-                    <Column headerStyle="width: 3rem; text-align: center;">
-                        <template #body="slotProps">
-                            <Checkbox v-model="selectedProducts" :value="slotProps.data" />
-                        </template>
-                    </Column>
-
-                    <Column field="cliCodigo" header="Código" :sortable="false" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="cliCodigo" header="Código" :sortable="false" headerStyle="width:16%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Code</span>
                             {{ slotProps.data.cliCodigo }}
                         </template>
                     </Column>
-                    <Column field="cliNombre" header="Nombre" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="cliNombre" header="Nombre" :sortable="true" headerStyle="width:16%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Name</span>
                             {{ slotProps.data.cliNombre }}
@@ -260,13 +253,13 @@ const initFilters = () => {
                             {{ slotProps.data.cliTelefono1 }}
                         </template>
                     </Column>
-                    <Column field="cliCorreo" header="Correo" :sortable="false" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="cliCorreo" header="Correo" :sortable="false" headerStyle="width:16%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Category</span>
                             {{ slotProps.data.cliCorreo }}
                         </template>
                     </Column>
-                    <Column field="cliDireccion1" header="Dirección" :sortable="false" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="cliDireccion1" header="Dirección" :sortable="false" headerStyle="width:18%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Category</span>
                             {{ slotProps.data.cliDireccion1 }}
@@ -274,8 +267,8 @@ const initFilters = () => {
                     </Column>
                     <Column headerStyle="min-width:10rem;">
                         <template #body="slotProps">
-                            <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editCliente(slotProps.data)" />
-                            <Button icon="pi pi-trash" class="p-button-rounded p-button-warning mt-2" @click="confirmDeleteProduct(slotProps.data)" />
+                            <Button icon="pi pi-pencil" class="p-button-rounded p-button mr-2" @click="editCliente(slotProps.data)" style="background-color: #2e78ba;"/>
+                            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger mt-2" @click="confirmDeleteProduct(slotProps.data)" />
                         </template>
                     </Column>
                 </DataTable>
@@ -322,8 +315,8 @@ const initFilters = () => {
                         </span>
                     </div>
                     <template #footer>
-                        <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
-                        <Button label="Guardar" icon="pi pi-check" class="p-button-text" @click="saveCliente" />
+                        <Button label="Cancelar" icon="pi pi-times" class="p-button-text p-button-danger" style="font-size: 1.2em;" @click="hideDialog" />
+                        <Button label="Guardar" icon="pi pi-check" class="p-button-text p-button-info" style="font-size: 1.2em;" @click="saveCliente" />
                     </template>
                 </Dialog>
 

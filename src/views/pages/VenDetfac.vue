@@ -1,14 +1,15 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeMount } from 'vue';
 import VehiculoService from '@/service/VehiculoService';
 import VenEncfacService from '@/service/VenEncfacService';
 import VenDetfacService from '@/service/VenDetfacService';
+import { FilterMatchMode } from 'primevue/api';
 const { anio, encfacNumero, vhcspcfPlaca } = defineProps(['anio', 'encfacNumero', 'vhcspcfPlaca']);
 
 console.log("Año:", anio);
 console.log("Número de factura:", encfacNumero);
 console.log("Placa:", vhcspcfPlaca);
-
+const filters = ref({});
 const detalles = ref([]);
 
 const venDetfacService = new VenDetfacService();
@@ -48,6 +49,10 @@ onMounted(async () => {
   }
 });
 
+onBeforeMount(() => {
+    initFilters();
+});
+
 const GetAuto = async () => {
     vehiculo.value = await vehiculoService.getVehiculo(anio, vhcspcfPlaca, encfacNumero);
     console.log(vehiculo.value.vhcspcfChequeo);
@@ -65,87 +70,178 @@ const GetDetalles = async () => {
     detalles.value = response.filter(item => item.detfacDescripcion !== null && item.descripcion !== '');
     console.log(detalles.value);
 };
-
+const formatCurrency = (value) => {
+    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+};
+const initFilters = () => {
+    filters.value = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    };
+};
 </script>
 
 
 <template>
-  <div id="invoice" >
-    <div id="invoice-top">
-      <div class="info">
-        <Button icon="pi pi-arrow-left" @click="regresar" class="p-button-rounded p-button bg-blue-900 text-white mr-2"></Button>
-      </div>
-      <div class="title">
-        <div class="flex items-center mb-3">
-          <label class="text-gray-900 text-2xl font-medium mb-0 mr-4">Factura</label>
-          <div class="text-gray-900 text-2xl font-medium mb-0">{{ encfacNumero }}</div>
-        </div>
-        <div class="label mb-2">
-            <span style="font-weight: bold;">Fecha:</span> {{ encfac.encfacFechaemision }}
-        </div>
-        <div class="label mb-2">
-            <span style="font-weight: bold;">Usuario:</span> {{ encfac.usuIdentificacion }}
-        </div>
-      </div>
-    </div>
-    <div id="invoice-mid">
-      <div class="info">
-        <div class="flex items-center mb-3">
-          <div class="bg-cyan-100 rounded-full p-2 mr-2">
-            <i class="pi pi-user text-cyan-400 text-2xl"></i>
-          </div>
-          <label class="text-black-900 text-2xl font-medium mb-0">Propietario del Vehículo</label>
-        </div>
-        <div class="label mb-2">
-            <span style="font-weight: bold;">Nombre:</span> {{ encfac.cliNombre }}
-        </div>
-        <div class="label mb-2">
-            <span style="font-weight: bold;">Código:</span> {{ encfac.cliCodigo }}
-        </div>
-      </div>
 
-      <div id="project" class="mb-6">
-        <div class="flex items-center mb-3">
-          <div class="bg-cyan-100 rounded-full p-2 mr-2">
-            <i class="pi pi-car text-cyan-500 text-2xl"></i>
-          </div>
-          <label class="text-black text-2xl font-medium mb-0">Información del Vehículo</label>
+<div class="grid" >
+  <div class="col-12">
+    <div class="card">
+      <Toolbar class="mb-2" style="width: 95%; margin: 0 auto;">
+                    <template v-slot:start>
+                      <Button icon="pi pi-arrow-left" @click="regresar" class="p-button-rounded p-button bg-blue-900 text-white mr-2"></Button>
+                    </template>
+                    <template v-slot:end>
+                      <div>
+                        <h4>
+                              <span style="font-weight: bold;">Factura:</span> {{ encfacNumero }}
+                        </h4>
+                        <div class="info-item" style="color: black;" >
+                            <span style="font-weight: bold;">Fecha:</span> {{ encfac.encfacFechaemision }}
+                        </div>
+                        <div class="info-item" style="color: black;">
+                            <span style="font-weight: bold;">Usuario:</span> {{ encfac.usuIdentificacion }}
+                        </div>
+                    </div>
+                    </template>
+      </Toolbar>
+
+      <div class="grid" style="width: 95%; margin: 0 auto;">
+            <div class="card mb-2 mr-5"  style="width: 40%;">
+                <div class="flex justify-content-between mb-3">
+                    <div>
+                        <span class="block text-700 font-medium mb-3" style="font-size: 1.5rem;">Propietario</span>
+                        <div class="text-900 font-medium text-xl">
+                          {{ encfac.cliNombre }}
+                        </div>
+                    </div>
+                    <div class="flex align-items-center justify-content-center bg-cyan-100 border-round" style="width: 2.9rem; height: 2.9rem">
+                        <i class="pi pi-user text-cyan-400 text-3xl"></i>
+                    </div>
+                </div>
+                <div class="label mb-2" style="color: black;">
+                    <span style="font-weight: bold;">Código:</span> {{ encfac.cliCodigo }}
+                </div>
+            </div>
+            <div class="card mb-2" style="width: 40%;">
+                <div class="flex justify-content-between mb-3">
+                    <div>
+                      <span class="block text-700 font-medium mb-3" style="font-size: 1.5rem;">Vehículo</span>
+                      <div class="text-900 font-medium text-xl">
+                          <span class="mr-2">{{ vehiculo.vhcspcfMarcaDescrip }}</span>
+                          <span class="text-blue-500">{{ vhcspcfPlaca }}</span>
+                      </div>
+                    </div>
+                    <div class="flex align-items-center justify-content-center bg-cyan-100 border-round" style="width: 2.9rem; height: 2.9rem">
+                        <i class="pi pi-car text-cyan-400 text-3xl"></i>
+                    </div>
+                </div>
+                <div class="flex justify-between">
+                  <div class="label mr-4" style="color: black;">
+                      <span style="font-weight: bold;">Color:</span> {{ vehiculo.vhcspcfColor  }}
+                  </div>
+                  <div class="label" style="color: black;">
+                      <span style="font-weight: bold;">Kilometraje:</span> {{ vehiculo.vhcspcfChequeo }}
+                  </div>
+                </div>
+            </div>
         </div>
-        <div class="flex justify-between mb-2">
-          <div class="label mr-4">
-              <span style="font-weight: bold;">Placa:</span> {{ vhcspcfPlaca }}
-          </div>
-          <div class="label">
-              <span style="font-weight: bold;">Marca:</span> {{ vehiculo.vhcspcfMarcaDescrip }}
-          </div>
-        </div>
-        <div class="flex justify-between">
-          <div class="label mr-4">
-              <span style="font-weight: bold;">Color:</span> {{ vehiculo.vhcspcfColor  }}
-          </div>
-          <div class="label">
-              <span style="font-weight: bold;">Kilometraje:</span> {{ vehiculo.vhcspcfChequeo }}
-          </div>
-        </div>
-      </div>
-    </div>
-    <div id="table" style="border-radius: 10px; overflow: hidden; width: 90%; margin: 0 auto;">
+
+        <div id="table" style="border-radius: 10px; overflow: hidden; width: 95%; margin: 0 auto;">
       <DataTable
-            :value="detalles"
-            :paginator="false"
-            responsiveLayout="scroll"
-          >
-            <!-- Definición de las columnas del DataTable -->
-            <Column field="detfacTipodet" header="Tipo" :sortable="false"  />
-            <Column field="detfacCodigo" header="Código" :sortable="false" />
-            <Column field="detfacDescripcion" header="Descripción" :sortable="false" />
-            <Column field="detfacCantidad" header="Cantidad" :sortable="false"  />
-            <Column field="detfacPrecio" header="Precio" :sortable="false" />
-            <Column field="detfacDescuento" header="%Descuento" :sortable="false" />
-            <Column field="detfacTotal" header="Total" :sortable="false" />
-            <Column field="detfacEmpleado" header="Tec" :sortable="false"  />
+                    ref="dt"
+                    :value="detalles"
+                    :paginator="true"
+                    :rows="8"
+                    :filters="filters"
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    :rowsPerPageOptions="[8, 13, 18]"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+                    responsiveLayout="scroll"
+                >
+                    <template #header >
+                        <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                            <h5 class="m-0">Detalle</h5>
+                            <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                <i class="pi pi-search" />
+                                <InputText v-model="filters['global'].value" placeholder="Buscar..." />
+                            </span>
+                        </div>
+                    </template>
+                    <Column   field="detfacTipodet" 
+                        header="Tipo" 
+                        :sortable="false" 
+                        :headerStyle="{ backgroundColor: '#E1F5FE' }" >
+                        <template #body="slotProps">
+                            <span class="p-column-title">Code</span>
+                            {{ slotProps.data.detfacTipodet }}
+                        </template>
+                    </Column>
+                    <Column   field="detfacCodigo" 
+                        header="Código" 
+                        :sortable="false" 
+                        :headerStyle="{ backgroundColor: '#E1F5FE' }" >
+                        <template #body="slotProps">
+                            <span class="p-column-title">Code</span>
+                            {{ slotProps.data.detfacCodigo }}
+                        </template>
+                    </Column>
+                    <Column field="detfacDescripcion"  
+                        header="Descripción" 
+                        :sortable="false" 
+                        :headerStyle="{ backgroundColor: '#E1F5FE' }">
+                        <template #body="slotProps">
+                            <span class="p-column-title">Code</span>
+                            {{ slotProps.data.detfacDescripcion }}
+                        </template>
+                    </Column>
+                    <Column field="detfacCantidad"  
+                        header="Cantidad" 
+                        :sortable="false" 
+                        :headerStyle="{ backgroundColor: '#E1F5FE' }">
+                        <template #body="slotProps">
+                            <span class="p-column-title">Code</span>
+                            {{ slotProps.data.detfacCantidad }}
+                        </template>
+                    </Column>
+                    <Column field="detfacPrecio" 
+                        header="Precio" 
+                        :sortable="true" 
+                        :headerStyle="{ backgroundColor: '#E1F5FE' }">
+                        <template #body="slotProps">
+                            <span class="p-column-title">Price</span>
+                            {{ formatCurrency(slotProps.data.detfacPrecio) }}
+                        </template>
+                    </Column>
+                    <Column field="detfacDescuento"  
+                        header="% Descuento" 
+                        :sortable="true" 
+                        :headerStyle="{ backgroundColor: '#E1F5FE' }">
+                        <template #body="slotProps">
+                            <span class="p-column-title">Code</span>
+                            {{ slotProps.data.detfacDescuento }}
+                        </template>
+                    </Column>
+                    <Column field="detfacTotal"  
+                        header="Total" 
+                        :sortable="true" 
+                        :headerStyle="{ backgroundColor: '#E1F5FE' }">
+                        <template #body="slotProps">
+                            <span class="p-column-title">Code</span>
+                            {{ slotProps.data.detfacTotal }}
+                        </template>
+                    </Column>
+                    <Column field="detfacEmpleado"  
+                        header="Tec" 
+                        :sortable="false" 
+                        :headerStyle="{ backgroundColor: '#E1F5FE' }">
+                        <template #body="slotProps">
+                            <span class="p-column-title">Code</span>
+                            {{ slotProps.data.detfacEmpleado }}
+                        </template>
+                    </Column>
       </DataTable>
     </div>
+
     <!-- Fila adicional después del DataTable -->
     <div id="invoice-top" style="text-align: right; max-width: 90%; margin: 0 auto;">
         <div class="label mb-2">
@@ -158,7 +254,9 @@ const GetDetalles = async () => {
             <span style="font-weight: bold;">TOTAL: </span> {{encfac.encfacTotal}}
         </div>
     </div>
+    </div>
   </div>
+</div>
 </template>
 
 <script>
@@ -168,98 +266,12 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@import '@/assets/demo/styles/badges.scss';
 @import url(https://fonts.googleapis.com/css?family=Roboto:100,300,400,900,700,500,300,100);
 *{
   margin: 0;
   box-sizing: border-box;
 
 }
-h1{
-  font-size: 1.5em;
-  color: #222;
-}
-h2{font-size: .9em;}
-h3{
-  font-size: 1.2em;
-  font-weight: 300;
-  line-height: 2em;
-}
-p{
-  font-size: .7em;
-  color: #666;
-  line-height: 1.2em;
-}
-
-#invoiceholder{
-  width:100%;
-  height: 100%;
-  padding-top: 50px;
-}
-#headerimage{
-  z-index: -1;
-  position: relative;
-  height: 100vh;
-  -webkit-box-shadow: inset 0 2px 4px rgba(0,0,0,.15), inset 0 -2px 4px rgba(0,0,0,.15);
-  -moz-box-shadow: inset 0 2px 4px rgba(0,0,0,.15), inset 0 -2px 4px rgba(0,0,0,.15);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,.15), inset 0 -2px 4px rgba(0,0,0,.15);
-  overflow:hidden;
-}
-
-#invoice{
-  position: relative;
-  margin: 0 auto;
-  width: 90%;
-  background: #FFF;
-}
-
-[id*='invoice-']{ /* Targets all id with 'col-' */
-  border-bottom: 1px solid #EEE;
-  padding: 30px;
-}
-
-#invoice-top{min-height: 120px;}
-#invoice-mid{min-height: 120px;}
-#invoice-bot{ min-height: 250px;}
-
-.logo{
-  float: left;
-  height: 60px;
-  width: 60px;
-  background: url(http://michaeltruong.ca/images/logo1.png) no-repeat;
-  background-size: 60px 60px;
-}
-.clientlogo{
-  float: left;
-  height: 60px;
-  width: 60px;
-  background: url(http://michaeltruong.ca/images/client.jpg) no-repeat;
-  background-size: 60px 60px;
-  border-radius: 50px;
-}
-.info{
-  display: block;
-  float:left;
-  margin-left: 40px;
-}
-.title{
-  float: right;
-}
-.title p{text-align: right;}
-#project{margin-left: 57%;}
-table{
-  width: 100%;
-  border-collapse: collapse;
-}
-td{
-  padding: 5px 0 5px 15px;
-  border: 1px solid #EEE
-}
-.tabletitle{
-  padding: 5px;
-  background: #EEE;
-}
-.service{border: 1px solid #EEE;}
-.item{width: 50%;}
-.itemtext{font-size: .9em;}
 </style>

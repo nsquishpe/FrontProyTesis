@@ -160,6 +160,18 @@ const router = createRouter({
                     props: true
                 },
                 {
+                    path: '/pages/ordenTrabajo',
+                    name: 'ordenTrabajo',
+                    component: () => import('@/views/pages/OrdenTrabajo.vue'),
+                    props: true
+                },
+                {
+                    path: '/pages/formOrdenTrabajo',
+                    name: 'formOrdenTrabajo',
+                    component: () => import('@/views/pages/FormOrdenTrabajo.vue'),
+                    props: true
+                },
+                {
                     path: '/documentation',
                     name: 'documentation',
                     component: () => import('@/views/utilities/Documentation.vue')

@@ -64,6 +64,11 @@ const model = ref([
                 to: '/pages/invMaearticulo'
             },
             {
+                label: 'Órdenes de Trabajo',
+                icon: 'pi pi-fw pi-file-edit',
+                to: '/pages/ordenTrabajo'
+            },
+            {
                 label: 'Landing',
                 icon: 'pi pi-fw pi-globe',
                 to: '/landing'
