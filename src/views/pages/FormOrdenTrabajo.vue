@@ -1,49 +1,114 @@
 <script setup>
-import { FilterMatchMode } from 'primevue/api';
-import { ref, onMounted, onBeforeMount, computed } from 'vue';
+import { ref, onMounted, watch , computed } from 'vue';
 import OrdTrabCabService from '@/service/OrdTrabCabService';
-import { useToast } from 'primevue/usetoast';
-import CountryService from '@/service/CountryService';
-
-const countryService = new CountryService();
-const selectedAutoValue = ref(null);
-const calendarValue = ref(null);
-const multiselectValue = ref(null);
-const autoValue = ref(null);
-const autoFilteredValue = ref([]);
-const knobValue = ref(50);
+import MarcaService from '@/service/MarcaService';
+import ClienteService from '@/service/ClienteService';
+import ColorService from '@/service/ColorService';
+import ServicioService from '@/service/ServicioService';
+const year = '2023'; 
 const canvas = ref(null);
+
+//Servicios
+const marcaService = new MarcaService();
+const clienteService = new ClienteService();
+const colorService = new ColorService();
+const servicioService = new ServicioService();
+
+//Manejo Clientes
+const selectedCliente = ref(null);
+const autoValueCliente = ref(null);
+const autoFilteredValueCliente = ref([]);
+//Manejo Colores
+const selectedColor = ref(null);
+const autoValueColor = ref(null);
+const autoFilteredValueColor = ref([]);
+//Manejo Marcas
+const selectedMarca = ref(null);
+const autoValueMarca  = ref(null);
+const autoFilteredValueMarca = ref([]);
+//Manejo Servicios
+const multiselectServicios = ref([]);
+const multiselectServicio = ref(null);
+
+const calendarValue = ref(null);
+const knobValue = ref(50);
+
 
 const multiselectValues = ref([
     { name: 'Australia', code: 'AU' },
-    { name: 'Brazil', code: 'BR' },
-    { name: 'China', code: 'CN' },
-    { name: 'Egypt', code: 'EG' }
+    { name: 'Brazil', code: 'BR' }
 ]);
 const items = ref([
       { text: 'Frase 1', checked: false, comment: '' },
-      { text: 'Frase 2', checked: false, comment: '' },
-      { text: 'Frase 3', checked: false, comment: '' },
+      { text: 'Frase 2', checked: false, comment: '' }
 ]);
 
 
 
 onMounted(() => {
-  countryService.getCountries().then((data) => (autoValue.value = data));
+  clienteService.getClientes(year).then((data) => (autoValueCliente.value = data));
+  colorService.getColores().then((data) => (autoValueColor.value = data));
+  marcaService.getMarcas().then((data) => (autoValueMarca.value = data));
+  servicioService.getServicios().then((data) => {
+    // Mapea los datos para tener un array con las propiedades necesarias
+    multiselectServicios.value = data.map((servicio) => ({
+      name: servicio.serDescrip,
+      code: servicio.serCodigo
+    }));
+  });
   setCanvas();
 });
 
-const searchCountry = (event) => {
+
+const BuscarCLiente = (event) => {
+  setTimeout(() => {
+    if (!event.query.trim().length) {
+      autoFilteredValueCliente.value = formatearClientes(autoValueCliente.value);
+    } else {
+      autoFilteredValueCliente.value = formatearClientes(
+        autoValueCliente.value.filter((cliente) => {
+          return cliente.cliNombre.toLowerCase().includes(event.query.toLowerCase()) || cliente.cliCodigo.includes(event.query);;
+        })
+      );
+    }
+  }, 250);
+};
+
+const formatearClientes = (clientes) => {
+  return clientes.map((cliente) => {
+    return {
+      label: `${cliente.cliNombre} - ${cliente.cliCodigo}`,
+      value: cliente, // Mantén el objeto de cliente completo como valor
+    };
+  });
+};
+const BuscarColores = (event) => {
     setTimeout(() => {
         if (!event.query.trim().length) {
-            autoFilteredValue.value = [...autoValue.value];
+            autoFilteredValueColor.value = [...autoValueColor.value];
         } else {
-            autoFilteredValue.value = autoValue.value.filter((country) => {
-                return country.name.toLowerCase().startsWith(event.query.toLowerCase());
+            autoFilteredValueColor.value = autoValueColor.value.filter((color) => {
+                return color.maecolorDescripcion.toLowerCase().includes(event.query.toLowerCase());
             });
         }
     }, 250);
 };
+const BuscarMarcas = (event) => {
+    setTimeout(() => {
+        if (!event.query.trim().length) {
+            autoFilteredValueMarca.value = [...autoValueMarca.value];
+        } else {
+            autoFilteredValueMarca.value = autoValueMarca.value.filter((marca) => {
+                return marca.vehmarmodNombre.toLowerCase().includes(event.query.toLowerCase());
+            });
+        }
+    }, 250);
+};
+
+ // Observa cambios en selectedAutoValue
+ watch(multiselectServicio, (newValue) => {
+      console.log('selectedCliente se ha actualizado:', newValue);
+});
 
 
 /*CANVAS*/
@@ -56,8 +121,8 @@ function drawImageOnCanvas(ctx, imageUrl, width, height) {
 }
 function setCanvas() {
   const ctx = canvas.value.getContext('2d');
-  const screenWidth = window.innerWidth * 0.9; 
-  const screenHeight = window.innerHeight * 0.9; 
+  const screenWidth = window.innerWidth * 0.5; 
+  const screenHeight = window.innerHeight * 0.5; 
   canvas.value.width = screenWidth;
   canvas.value.height = screenHeight;
   drawImageOnCanvas(ctx, 'demo/images/galleria/galleria11.png', screenWidth, screenHeight);
@@ -87,8 +152,8 @@ function setCanvas() {
                         </div>
                         <div class="field col-12 md:col-5 mr-8" >
                             <label for="lastname2">Cliente</label>
-                            <AutoComplete placeholder="Search" id="dd" :dropdown="true" :multiple="false" v-model="selectedAutoValue" 
-                            :suggestions="autoFilteredValue" @complete="searchCountry($event)" field="name" />
+                            <AutoComplete placeholder="Buscar" id="dd" :dropdown="true" :multiple="false" v-model="selectedCliente" 
+                            :suggestions="autoFilteredValueCliente" @complete="BuscarCLiente($event)" field="label" />
                         </div>
                         <div class="field col-12 md:col-3">
                             <label for="lastname2">Tanque de Gasolina</label>
@@ -105,13 +170,14 @@ function setCanvas() {
                         </div>
                         <div class="field col-12 md:col-3">
                             <label for="state">Color</label>
-                            <AutoComplete placeholder="Search" id="dd" :dropdown="true" :multiple="false" v-model="selectedAutoValue" 
-                            :suggestions="autoFilteredValue" @complete="searchCountry($event)" field="name" />
+                            <AutoComplete placeholder="Buscar" id="dd" :dropdown="true" :multiple="false" v-model="selectedColor" 
+                            :suggestions="autoFilteredValueColor" @complete="BuscarColores($event)" field="maecolorDescripcion" />
+
                         </div>
                         <div class="field col-12 md:col-3">
                             <label for="state">Marca</label>
-                            <AutoComplete placeholder="Search" id="dd" :dropdown="true" :multiple="false" v-model="selectedAutoValue" 
-                            :suggestions="autoFilteredValue" @complete="searchCountry($event)" field="name" />
+                            <AutoComplete placeholder="Buscar" id="dd" :dropdown="true" :multiple="false" v-model="selectedMarca" 
+                            :suggestions="autoFilteredValueMarca" @complete="BuscarMarcas($event)" field="vehmarmodNombre" />
                         </div>
                     </div>
                 </div>
@@ -153,13 +219,13 @@ function setCanvas() {
                     <h5>Servicios</h5>
                     <div class="p-fluid formgrid grid">
                         <div class="field col-11 md:col-12">
-                            <MultiSelect v-model="multiselectValue" :options="multiselectValues" optionLabel="name" placeholder="Select Countries" :filter="true">
+                            <MultiSelect v-model="multiselectServicio" :options="multiselectServicios" optionLabel="name" placeholder="Select Countries" :filter="true">
                                 <template #value="slotProps">
                                     <div class="inline-flex align-items-center py-1 px-2 bg-primary text-primary border-round mr-2" v-for="option of slotProps.value" :key="option.code">
                                         <div>{{ option.name }}</div>
                                     </div>
                                     <template v-if="!slotProps.value || slotProps.value.length === 0">
-                                        <div class="p-1">Select Countries</div>
+                                        <div class="p-1">Selecciona Servicios</div>
                                     </template>
                                 </template>
                                 <template #option="slotProps">
