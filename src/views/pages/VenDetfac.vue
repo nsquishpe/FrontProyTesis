@@ -86,9 +86,9 @@ const initFilters = () => {
 <div class="grid" >
   <div class="col-12">
     <div class="card">
-      <Toolbar class="mb-2" style="width: 95%; margin: 0 auto;">
+      <Toolbar class="mb-1">
                     <template v-slot:start>
-                      <Button icon="pi pi-arrow-left" @click="regresar" class="p-button-rounded p-button bg-blue-900 text-white mr-2"></Button>
+                        <Button icon="pi pi-arrow-left" class="p-button-secondary" />
                     </template>
                     <template v-slot:end>
                       <div>
@@ -105,49 +105,30 @@ const initFilters = () => {
                     </template>
       </Toolbar>
 
-      <div class="grid" style="width: 95%; margin: 0 auto;">
-            <div class="card mb-2 mr-5"  style="width: 40%;">
-                <div class="flex justify-content-between mb-3">
-                    <div>
-                        <span class="block text-700 font-medium mb-3" style="font-size: 1.5rem;">Propietario</span>
-                        <div class="text-900 font-medium text-xl">
-                          {{ encfac.cliNombre }}
-                        </div>
+      <div class="grid">
+            <div class="field col-12 md:col-6">
+                <Panel header="PROPIETARIO" :toggleable="true">
+                    <div class="text-900 font-medium text-xl">
+                        <i class="pi pi-user" style="font-size: 1.8rem; color: #779ecb; margin-right: 0.75rem;"></i>
+                        <label class="mr-2" > {{ encfac.cliNombre }} - </label>
+                        <Label>{{ encfac.cliCodigo }}</Label>
                     </div>
-                    <div class="flex align-items-center justify-content-center bg-cyan-100 border-round" style="width: 2.9rem; height: 2.9rem">
-                        <i class="pi pi-user text-cyan-400 text-3xl"></i>
-                    </div>
-                </div>
-                <div class="label mb-2" style="color: black;">
-                    <span style="font-weight: bold;">Código:</span> {{ encfac.cliCodigo }}
-                </div>
+                </Panel>
             </div>
-            <div class="card mb-2" style="width: 40%;">
-                <div class="flex justify-content-between mb-3">
-                    <div>
-                      <span class="block text-700 font-medium mb-3" style="font-size: 1.5rem;">Vehículo</span>
-                      <div class="text-900 font-medium text-xl">
-                          <span class="mr-2">{{ vehiculo.vhcspcfMarcaDescrip }}</span>
-                          <span class="text-blue-500">{{ vhcspcfPlaca }}</span>
-                      </div>
+            <div class="field col-12 md:col-6">
+                <Panel header="VEHÍCULO" :toggleable="true">
+                    <div class="text-900 font-medium text-xl">
+                        <i class="pi pi-car" style="font-size: 1.8rem; color: #779ecb; margin-right: 0.75rem;"></i>
+                        <label class="mr-3" >{{ vehiculo.vhcspcfMarcaDescrip }}</label>
+                        <Tag class="placa mr-7"  style="font-size: 16px;">{{ vhcspcfPlaca }}</Tag>
+                        <label class="mr-2"> {{ vehiculo.vhcspcfColor}} -</label>
+                        <label> {{vehiculo.vhcspcfChequeo }} km</label>
                     </div>
-                    <div class="flex align-items-center justify-content-center bg-cyan-100 border-round" style="width: 2.9rem; height: 2.9rem">
-                        <i class="pi pi-car text-cyan-400 text-3xl"></i>
-                    </div>
-                </div>
-                <div class="flex justify-between">
-                  <div class="label mr-4" style="color: black;">
-                      <span style="font-weight: bold;">Color:</span> {{ vehiculo.vhcspcfColor  }}
-                  </div>
-                  <div class="label" style="color: black;">
-                      <span style="font-weight: bold;">Kilometraje:</span> {{ vehiculo.vhcspcfChequeo }}
-                  </div>
-                </div>
+                </Panel>
             </div>
         </div>
 
-        <div id="table" style="border-radius: 10px; overflow: hidden; width: 95%; margin: 0 auto;">
-      <DataTable
+        <DataTable
                     ref="dt"
                     :value="detalles"
                     :paginator="true"
@@ -155,7 +136,7 @@ const initFilters = () => {
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[8, 13, 18]"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+                    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} líneas"
                     responsiveLayout="scroll"
                 >
                     <template #header >
@@ -172,8 +153,7 @@ const initFilters = () => {
                         :sortable="false" 
                         :headerStyle="{ backgroundColor: '#E1F5FE' }" >
                         <template #body="slotProps">
-                            <span class="p-column-title">Code</span>
-                            {{ slotProps.data.detfacTipodet }}
+                            <Tag :class="'serv-badge tipo-' + (slotProps.data.detfacTipodet ? slotProps.data.detfacTipodet.toLowerCase() : '')" style="font-size: 16px;">{{ slotProps.data.detfacTipodet }}</Tag>
                         </template>
                     </Column>
                     <Column   field="detfacCodigo" 
@@ -190,8 +170,7 @@ const initFilters = () => {
                         :sortable="false" 
                         :headerStyle="{ backgroundColor: '#E1F5FE' }">
                         <template #body="slotProps">
-                            <span class="p-column-title">Code</span>
-                            {{ slotProps.data.detfacDescripcion }}
+                            <span><strong>{{ slotProps.data.detfacDescripcion }}</strong></span>
                         </template>
                     </Column>
                     <Column field="detfacCantidad"  
@@ -214,7 +193,7 @@ const initFilters = () => {
                     </Column>
                     <Column field="detfacDescuento"  
                         header="% Descuento" 
-                        :sortable="true" 
+                        :sortable="false" 
                         :headerStyle="{ backgroundColor: '#E1F5FE' }">
                         <template #body="slotProps">
                             <span class="p-column-title">Code</span>
@@ -223,7 +202,7 @@ const initFilters = () => {
                     </Column>
                     <Column field="detfacTotal"  
                         header="Total" 
-                        :sortable="true" 
+                        :sortable="false" 
                         :headerStyle="{ backgroundColor: '#E1F5FE' }">
                         <template #body="slotProps">
                             <span class="p-column-title">Code</span>
@@ -240,7 +219,6 @@ const initFilters = () => {
                         </template>
                     </Column>
       </DataTable>
-    </div>
 
     <!-- Fila adicional después del DataTable -->
     <div id="invoice-top" style="text-align: right; max-width: 90%; margin: 0 auto;">
@@ -274,4 +252,12 @@ export default {
   box-sizing: border-box;
 
 }
+.text-900 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center; /* Asegura que el texto dentro del div esté centrado */
+    height: 100%; /* Ajusta la altura según sea necesario */
+}
+
 </style>

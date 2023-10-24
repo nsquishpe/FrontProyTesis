@@ -68,6 +68,10 @@ const initFilters = () => {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS }
     };
 };
+
+const formatCurrency = (value) => {
+    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+};
 </script>
 
 <template>
@@ -78,13 +82,13 @@ const initFilters = () => {
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2" style="text-align: center;">
-                            <label for="dropdownYears" style="font-weight: bold;">Periodo: </label>
+                            <label for="dropdownYears" style="font-weight: bold;color: black;font-size: 1.05em;" class="mr-1">PERIODO: </label>
                             <Dropdown v-model="selectedYear" :options="dropdownYears" optionLabel="label" placeholder="Año" @focus="RefreshClientes" />
                         </div>
                     </template>
 
                     <template v-slot:end>
-                        <Button label="Exportar" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
+                        <Button label="Exportar" icon="pi pi-upload" class="p-button-secondary" @click="exportCSV($event)" />
                     </template>
                 </Toolbar>
 
@@ -143,13 +147,13 @@ const initFilters = () => {
                     <Column field="encfacTotal" header="Total" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">tot</span>
-                            {{ slotProps.data.encfacTotal }}
+                            {{ formatCurrency(slotProps.data.encfacTotal) }}
                         </template>
                     </Column>
                     <Column style="width: 15%">
                         <template #header> Visualizar </template>
                         <template #body="slotProps">
-                            <Button icon="pi pi-search" type="button" class="p-button-rounded p-button mr-2" @click="goToVenDetfac(selectedYear, slotProps.data.encfacNumero, slotProps.data.vhcspcfPlaca)"></Button>
+                            <Button icon="pi pi-search" type="button" class="p-button-rounded p-button mr-2" style="background-color: #2e78ba;" @click="goToVenDetfac(selectedYear, slotProps.data.encfacNumero, slotProps.data.vhcspcfPlaca)"></Button>
                         </template>
                     </Column>
                 </DataTable>

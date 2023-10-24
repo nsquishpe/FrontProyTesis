@@ -2,32 +2,34 @@
 import { FilterMatchMode } from 'primevue/api';
 import { ref, onMounted, onBeforeMount } from 'vue';
 import OrdTrabCabService from '@/service/OrdTrabCabService';
+import OrdTrabDetInvService from '@/service/OrdTrabDetInvService';
+import OrdTrabDetSerService from '@/service/OrdTrabDetSerService';
 import { useToast } from 'primevue/usetoast';
+import { useRouter } from 'vue-router'; // Importa useRouter de vue-router
 
+const router = useRouter(); // Obtén el objeto router
 const toast = useToast();
 const clientes = ref(null);
 const products = ref(null);
 const productDialog = ref(false);
 const deleteProductDialog = ref(false);
-const deleteProductsDialog = ref(false);
 const product = ref({});
 const selectedProducts = ref(null);
 const dt = ref(null);
 const filters = ref({});
 const submitted = ref(false);
-
+const ordTrabDetInvService = new OrdTrabDetInvService();
+const ordTrabDetSerService = new OrdTrabDetSerService();
 const ordTrabCabService = new OrdTrabCabService();
 
 const cliente = ref({
     anio: '',
-    cliCodigo: '',
-    cliNombrec: '',
+    ordNumero: 0,
     cliNombre: '',
-    cliRucide: '',
-    cliDireccion1: '',
-    cliTelefono1: '',
-    cliCorreo: '',
-    cliSaldo: 0,
+    cliCodigo: '',
+    ordFecha: '',
+    ordPlaca: '',
+    vehmarmodNombre: ''
 });
 
 //Select Anios
@@ -44,11 +46,26 @@ onMounted(() => {
     RefreshClientes();
 });
 
-// Función para refrescar los clientes con el año seleccionado
+const Nuevo = () => {
+  router.push({ name: 'formOrdenTrabajo' });
+};
+
 const RefreshClientes = async () => {
     const selectedYearValue = selectedYear.value.value; 
-    clientes.value = await ordTrabCabService.getOrdenes(selectedYearValue);
+    const data = await ordTrabCabService.getOrdenes(selectedYearValue);
+
+    // Verifica si data es un objeto y conviértelo en un array si es necesario
+    const clientesArray = Array.isArray(data) ? data : [data];
+
+    clientes.value = clientesArray.map(cliente => {
+        if (cliente.ordFecha) {
+            const fecha = new Date(cliente.ordFecha);
+            cliente.ordFecha = fecha.toLocaleDateString(); // Formatea la fecha como 'MM/DD/YYYY' o 'DD/MM/YYYY' dependiendo del idioma del navegador
+        }
+        return cliente;
+    });
 };
+
 
 const confirmDeleteProduct = (editCliente) => {
     cliente.value = editCliente;
@@ -59,21 +76,20 @@ const confirmDeleteProduct = (editCliente) => {
 const deleteProduct = async () => {
     try {
         const newCliente = {
-            anio: '2023',
-            cliCodigo: cliente.value.cliCodigo,
-            cliNombrec: cliente.value.cliNombre,
+            ordAnio: '2023',
+            ordNumero: cliente.value.ordNumero,
             cliNombre: cliente.value.cliNombre,
-            cliRucide: cliente.value.cliCodigo,
-            cliDireccion1: cliente.value.cliDireccion1,
-            cliTelefono1: cliente.value.cliTelefono1,
-            cliCorreo: cliente.value.cliCorreo,
-            cliSaldo: 0,
+            cliCodigo: cliente.value.cliCodigo,
+            ordPlaca: cliente.value.ordPlaca
         };
 
-    const response = await clienteService.deleteCliente(newCliente);
-    console.warn(response);
+   
+    
+    const response1 = await ordTrabDetSerService.deleteDetServ(newCliente.ordNumero, newCliente.ordAnio);
+    const response2 = await ordTrabDetInvService.deleteDetInv(newCliente.ordNumero, newCliente.ordAnio);
+    const response = await ordTrabCabService.deleteCabOrden(newCliente);
 
-    if (response == true) {
+    if (response1 && response2 && response) {
       toast.add({ severity: 'success', summary: 'Exitoso', detail: 'Cliente Eliminado', life: 3000 });
       // Actualiza la lista de clientes 
       RefreshClientes();
@@ -117,7 +133,7 @@ const initFilters = () => {
                 <Toolbar class="mb-2">
                     <template v-slot:start>
                         <div class="my-2">
-                            <Button label="Nuevo" icon="pi pi-plus" class="p-button-success mr-4" @click="openNew" />
+                            <Button label="Nuevo" icon="pi pi-plus" class="p-button-success mr-4"  @click="Nuevo()" />
                             <label for="dropdownYears" style="font-weight: bold;color: black;font-size: 1.05em;" class="mr-1">PERIODO: </label>
                             <Dropdown v-model="selectedYear" :options="dropdownYears" optionLabel="label" placeholder="Año" @focus="RefreshClientes" disabled />
                         </div>
@@ -131,7 +147,7 @@ const initFilters = () => {
                 <DataTable
                     ref="dt"
                     :value="clientes"
-                    :dataKey="cliente.ordNumero"
+                    :dataKey="cliente.ordNumero.toString()"
                     :paginator="true"
                     :rows="5"
                     :filters="filters"
@@ -150,13 +166,13 @@ const initFilters = () => {
                         </div>
                     </template>
 
-                    <Column field="ordNumero" header="Número" :sortable="false" headerStyle="width:16%; min-width:10rem;">
+                    <Column field="ordNumero" header="Número" :sortable="false" headerStyle="width:11%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Code</span>
                             {{ slotProps.data.ordNumero }}
                         </template>
                     </Column>
-                    <Column field="cliNombre" header="Nombre" :sortable="true" headerStyle="width:16%; min-width:10rem;">
+                    <Column field="cliNombre" header="Nombre" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Name</span>
                             {{ slotProps.data.cliNombre }}
@@ -168,28 +184,28 @@ const initFilters = () => {
                             {{ slotProps.data.cliCodigo }}
                         </template>
                     </Column>
-                    <Column field="ordFecha" header="Fecha" :sortable="false" headerStyle="width:16%; min-width:10rem;">
+                    <Column field="ordFecha" header="Fecha" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Category</span>
                             {{ slotProps.data.ordFecha }}
                         </template>
                     </Column>
-                    <Column field="ordPlaca" header="Placa" :sortable="false" headerStyle="width:18%; min-width:10rem;">
+                    <Column field="ordPlaca" header="Placa" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Category</span>
                             {{ slotProps.data.ordPlaca }}
                         </template>
                     </Column>
-                    <Column field="vehmarmodCodigo" header="Marca" :sortable="false" headerStyle="width:18%; min-width:10rem;">
+                    <Column field="vehmarmodNombre" header="Marca" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Category</span>
-                            {{ slotProps.data.vehmarmodCodigo }}
+                            {{ slotProps.data.vehmarmodNombre }}
                         </template>
                     </Column>
-                    <Column headerStyle="min-width:10rem;">
+                    <Column headerStyle="min-width:9rem;">
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" class="p-button-rounded p-button mr-2" @click="editCliente(slotProps.data)" style="background-color: #2e78ba;"/>
-                            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger mt-2" @click="confirmDeleteProduct(slotProps.data)" />
+                            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger mr-2" @click="confirmDeleteProduct(slotProps.data)" />
                         </template>
                     </Column>
                 </DataTable>

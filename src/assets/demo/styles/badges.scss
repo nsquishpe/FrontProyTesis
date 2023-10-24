@@ -26,6 +26,28 @@
     }
 }
 
+.serv-badge {
+    &.tipo-a {
+        background: #fbe472a7;
+        color: #e28c22;
+    }
+    &.tipo-s {
+        background: #c3f2f7da;
+        color: #5979eb;
+    }
+    &.tipo-na {
+        font-size: 10px;
+        background: #eaececda;
+        color: #444447;
+    }
+}
+
+.placa {
+    background: #2356A5;
+    color: #ffffff;
+    
+}
+
 .customer-badge {
     &.status-qualified {
         background: #C8E6C9;

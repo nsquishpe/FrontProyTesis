@@ -227,7 +227,10 @@ const initFilters = () => {
                 >
                     <template #header >
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center" >
-                            <h5 class="m-0">Administrar Clientes</h5>
+                            <div class="icon-label">
+                                <i class="pi pi-user mr-3" style="font-size: 1.8rem; color: #779ecb;"></i>
+                                <label>Administrar Clientes</label>
+                            </div>
                             <span class="block mt-2 md:mt-0 p-input-icon-left">
                                 <i class="pi pi-search" />
                                 <InputText v-model="filters['global'].value" placeholder="Buscar..." />

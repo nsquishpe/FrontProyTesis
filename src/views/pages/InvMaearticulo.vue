@@ -92,15 +92,15 @@ const initFilters = () => {
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2">
-                            <label for="dropdownYears" class="mr-4" style="font-weight: bold;">Periodo: </label>
+                            <label for="dropdownYears" style="font-weight: bold;color: black;font-size: 1.05em;" class="mr-1">PERIODO: </label>
                             <Dropdown v-model="selectedYear" :options="dropdownYears" optionLabel="label" placeholder="Año" class="mr-4" />
-                            <label for="dropdownYears" class="mr-4" style="font-weight: bold;">Categoría: </label>
+                            <label for="dropdownYears" style="font-weight: bold;color: black;font-size: 1.05em;" class="mr-1">CATEGORÍAS: </label>
                             <Dropdown v-model="selectedCategoria" :options="dropdownCategorias" optionLabel="label" placeholder="Año" @focus="RefreshProductos" />
                         </div>
                     </template>
 
                     <template v-slot:end>
-                        <Button label="Export" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
+                        <Button label="Exportar" icon="pi pi-upload" class="p-button-secondary" @click="exportCSV($event)" />
                     </template>
                 </Toolbar>
 
@@ -126,32 +126,32 @@ const initFilters = () => {
                         </div>
                     </template>
 
-                    <Column field="artCodigo" header="Código" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="artCodigo" header="Código" :sortable="true" headerStyle="width:8%; min-width:10rem;">
                         <template #body="slotProps">
                             {{ slotProps.data.artCodigo }}
                         </template>
                     </Column>
-                    <Column field="artNombre" header="Descripción" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="artNombre" header="Descripción" :sortable="true" headerStyle="width:30%; min-width:10rem;">
                         <template #body="slotProps">
                             {{ slotProps.data.artNombre }}
                         </template>
                     </Column>
-                    <Column field="grupNombre" header="Categoría" :sortable="true" headerStyle="width:14%; min-width:8rem;">
+                    <Column field="grupNombre" header="Categoría" :sortable="true" headerStyle="width:8%; min-width:8rem;">
                         <template #body="slotProps">
                             {{ formatCurrency(slotProps.data.grupNombre) }}
                         </template>
                     </Column>
-                    <Column field="precio" header="Precio" :sortable="true" headerStyle="width:14%; min-width:8rem;">
+                    <Column field="precio" header="Precio" :sortable="true" headerStyle="width:8%; min-width:8rem;">
                         <template #body="slotProps">
                             {{ formatCurrency(slotProps.data.precio) }}
                         </template>
                     </Column>
-                    <Column field="stock" header="Stock" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="stock" header="Stock" :sortable="true" headerStyle="width:8%; min-width:10rem;">
                         <template #body="slotProps">
                             {{ slotProps.data.stock }}
                         </template>
                     </Column>
-                    <Column field="inventoryStatus" header="Status" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="inventoryStatus" header="Status" :sortable="true" headerStyle="width:8%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Status</span>
                             <span :class="'product-badge status-' + (slotProps.data.inventoryStatus ? slotProps.data.inventoryStatus.toLowerCase() : '')">{{ slotProps.data.inventoryStatus }}</span>
@@ -160,7 +160,7 @@ const initFilters = () => {
                     <Column style="width: 15%">
                         <template #header> Visualizar </template>
                         <template #body="slotProps">
-                            <Button icon="pi pi-search" type="button" class="p-button-rounded p-button mr-2" @click="goDetalleKardex(selectedYear, slotProps.data.artCodigo, slotProps.data.artNombre, slotProps.data.stock)"></Button>
+                            <Button icon="pi pi-search" type="button" class="p-button-rounded p-button mr-2" style="background-color: #2e78ba;" @click="goDetalleKardex(selectedYear, slotProps.data.artCodigo, slotProps.data.artNombre, slotProps.data.stock)"></Button>
                         </template>
                     </Column>
                 </DataTable>
