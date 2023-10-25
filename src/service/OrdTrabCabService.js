@@ -70,5 +70,17 @@ export default class OrdTrabCabService {
             throw new Error('Error al crear el cliente.'); 
         }
     }    
+    async getCabById(anio, codigo) {
+        try {
+            // Realiza la llamada a la API para obtener el cliente por su año y código
+            const response = await axios.get(`${this.baseUrl}CabOrdenTrabajo/num/${anio}/${codigo}`);
+            console.warn(response);
+            // Devuelve el cliente obtenido de la API
+            return response.data;
+        } catch (error) {
+            console.error('Error al obtener el cliente por ID:', error);
+            return null; // Devuelve null si no se encuentra el cliente o en caso de error
+        }
+    }
     
 }

@@ -40,6 +40,11 @@ const model = ref([
                 to: '/pages/ordenTrabajo'
             },
             {
+                label: 'Empty',
+                icon: 'pi pi-fw pi-circle-off',
+                to: '/pages/empty'
+            },
+            {
                 label: 'Auth',
                 icon: 'pi pi-fw pi-user',
                 items: [

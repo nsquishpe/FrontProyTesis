@@ -14,4 +14,14 @@ export default class ColorService {
         return []; // Devuelve un array vacío en caso de error
         }
     }
+    async getColorById(maecolorCodigo) {
+        try {
+            const colores = await this.getColores();
+            const colorEncontrado = colores.find(color => color.maecolorCodigo === maecolorCodigo);
+            return colorEncontrado;
+        } catch (error) {
+            console.error('Error al obtener la marca por ID:', error);
+            throw error; // Lanza el error para que sea manejado por el código que llama a este método
+        }
+    }
 }

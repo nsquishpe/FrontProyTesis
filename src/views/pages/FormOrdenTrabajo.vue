@@ -9,14 +9,13 @@ import ColorService from '@/service/ColorService';
 import ServicioService from '@/service/ServicioService';
 import InvVehiculoService from '@/service/InvVehiculoService';
 import { useToast } from 'primevue/usetoast';
-import { useRouter } from 'vue-router'; // Importa useRouter de vue-router
+import { useRouter } from 'vue-router'; 
 
-const router = useRouter(); 
+const router = useRouter();
+const { num, selectedYearValue } = defineProps(['num', 'selectedYearValue']);
 const toast = useToast();
 const year = '2023'; 
 const submitted = ref(false);
-
-//Servicios
 const marcaService = new MarcaService();
 const clienteService = new ClienteService();
 const colorService = new ColorService();
@@ -25,6 +24,11 @@ const invVehiculoService = new InvVehiculoService();
 const ordTrabCabService = new OrdTrabCabService();
 const ordTrabDetInvService = new OrdTrabDetInvService();
 const ordTrabDetSerService = new OrdTrabDetSerService();
+const calendarValue = ref(null);
+const observaciones = ref(null);
+const placa = ref(null);
+const km = ref(null);
+const knobValue = ref(50);
 
 //Manejo Clientes
 const selectedCliente = ref(null);
@@ -52,46 +56,130 @@ const drawing = ref(false);
 let ctx = null;
 let lastX = 0;
 let lastY = 0;
-const strokeColor = ref('#0000FF'); // Azul como valor predeterminado
-const strokeWidth = ref(4); // Grosor predeterminado: 10
+const strokeColor = ref('#0000FF'); 
+const strokeWidth = ref(4); 
 
+/*****************************    FUNCIONES APOYO    ********************************/
 
-const calendarValue = ref(null);
-const observaciones = ref(null);
-const placa = ref(null);
-const km = ref(null);
-const knobValue = ref(50);
+function actualizarElementos(array, apiArray, codigosPermitidos) {
+    array.forEach(item => {
+        const apiData = apiArray.find(apiItem => apiItem.invCodigo === item.invCodigo);
+        if (apiData) {
+            item.selected = true; 
+            if (codigosPermitidos.includes(item.invCodigo)) {
+                item.texto = apiData.invDescrip;
+            }
+        }
+    });
+}
+const convertirYFormatearFecha = (fechaVue) => {
+  const fechaObj = new Date(fechaVue);
+  const año = fechaObj.getFullYear();
+  const mes = ('0' + (fechaObj.getMonth() + 1)).slice(-2);
+  const día = ('0' + fechaObj.getDate()).slice(-2);
+  const horas = ('0' + fechaObj.getHours()).slice(-2);
+  const minutos = ('0' + fechaObj.getMinutes()).slice(-2);
+  const segundos = ('0' + fechaObj.getSeconds()).slice(-2);
+  const formatoDeseado = `${año}-${mes}-${día}T${horas}:${minutos}:${segundos}`;
+  return formatoDeseado;
+};
 
-onMounted(() => {
-    Promise.all([
-        clienteService.getClientes(year),
-        colorService.getColores(),
-        marcaService.getMarcas(),
-        servicioService.getServicios().then(data => multiselectServicios.value = data.map(servicio => ({ serCodigo: servicio.serCodigo, serDescrip: servicio.serDescrip }))),
-        invVehiculoService.getInterior(),
-        invVehiculoService.getExterior(),
-        invVehiculoService.getAccesorios()
-        ]).then(([clientes, colores, marcas, , interiorData, exteriorData, accesoriosData]) => {
+const formatearClientes = (clientes) => {
+  return clientes.map((cliente) => {
+    return {
+      label: `${cliente.cliNombre} - ${cliente.cliCodigo}`,
+      value: cliente, // Mantén el objeto de cliente completo como valor
+    };
+  });
+};
+
+/*****************************    V-MODEL    ********************************/
+const ObtenerDatosEdicion = async (num, selectedYearValue) => {
+    //cabecera
+    const ord_cab = await ordTrabCabService.getCabById(selectedYearValue, num); 
+    const servs = await ordTrabDetSerService.getSerById(num, selectedYearValue);
+    const invs = await ordTrabDetInvService.getInvById(num, selectedYearValue);
+    const [inventario, cliente, marca, color] = await Promise.all([
+        invVehiculoService.dividirInventario(invs),
+        clienteService.getClienteById(selectedYearValue, ord_cab.cliCodigo),
+        marcaService.getMarcaById(ord_cab.vehmarmodCodigo),
+        colorService.getColorById(ord_cab.maecolorCodigo)
+    ]);
+
+    const int = inventario.interiores;
+    const ext = inventario.exteriores;
+    const acs = inventario.accesorios;
+
+    //LLENAR CAMPOS
+    calendarValue.value = new Date(ord_cab.ordFecha);
+    observaciones.value = ord_cab.ordObsv;
+    placa.value = ord_cab.ordPlaca;
+    km.value = parseInt(ord_cab.ordKm);
+    selectedMarca.value = marca;
+    selectedColor.value = color;
+    selectedCliente.value = {
+        label: `${cliente.cliNombre} - ${cliente.cliCodigo}`,
+        value: cliente
+    };
+
+    multiselectServicio.value = servs.map(servicio => ({
+      serDescrip: servicio.detDescrip,
+      serCodigo: servicio.serCodigo
+    }));
+
+    actualizarElementos(interior.value, int, ['1', '2', '3', '12', '13', '14']);
+    actualizarElementos(exterior.value, ext, ['22', '23']);
+    actualizarElementos(accesorios.value, acs, []);
+};
+
+/*****************************    CARGAR PAG    ********************************/
+const inicializarDatos = async () => {
+    try {
+        const [clientes, colores, marcas, , interiorData, exteriorData, accesoriosData] = await Promise.all([
+            clienteService.getClientes(year),
+            colorService.getColores(),
+            marcaService.getMarcas(),
+            servicioService.getServicios().then(data => multiselectServicios.value = data.map(servicio => ({ serCodigo: servicio.serCodigo, serDescrip: servicio.serDescrip }))),
+            invVehiculoService.getInterior(),
+            invVehiculoService.getExterior(),
+            invVehiculoService.getAccesorios()
+        ]);
+
         autoValueCliente.value = clientes;
         autoValueColor.value = colores;
         autoValueMarca.value = marcas;
         interior.value = interiorData;
         exterior.value = exteriorData;
         accesorios.value = accesoriosData;
-    });
-  setCanvas();
-  if (canvas.value) {
-    ctx = canvas.value.getContext('2d');
-    ctx.strokeStyle = strokeColor.value;
-    ctx.lineWidth = strokeWidth.value;
-    canvas.value.addEventListener('mousedown', startDrawing);
-    canvas.value.addEventListener('mousemove', draw);
-    canvas.value.addEventListener('mouseup', stopDrawing);
-    canvas.value.addEventListener('mouseout', stopDrawing);
-  }
-  calendarValue.value = new Date(); // Establecer la fecha actual como valor predeterminado
+
+        setCanvas();
+
+        if (canvas.value) {
+            ctx = canvas.value.getContext('2d');
+            ctx.strokeStyle = strokeColor.value;
+            ctx.lineWidth = strokeWidth.value;
+            canvas.value.addEventListener('mousedown', startDrawing);
+            canvas.value.addEventListener('mousemove', draw);
+            canvas.value.addEventListener('mouseup', stopDrawing);
+            canvas.value.addEventListener('mouseout', stopDrawing);
+        }
+
+        if (num && selectedYearValue) {
+            await ObtenerDatosEdicion(num, selectedYearValue);
+        } else {
+            calendarValue.value = new Date(); // Establecer la fecha actual como valor predeterminado
+            console.log(calendarValue.value);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+onMounted(() => {
+    inicializarDatos();
 });
 
+/*****************************    DROPDOWN    ********************************/
 const BuscarCLiente = (event) => {
   setTimeout(() => {
     if (!event.query.trim().length) {
@@ -106,14 +194,6 @@ const BuscarCLiente = (event) => {
   }, 250);
 };
 
-const formatearClientes = (clientes) => {
-  return clientes.map((cliente) => {
-    return {
-      label: `${cliente.cliNombre} - ${cliente.cliCodigo}`,
-      value: cliente, // Mantén el objeto de cliente completo como valor
-    };
-  });
-};
 const BuscarColores = (event) => {
     setTimeout(() => {
         if (!event.query.trim().length) {
@@ -163,20 +243,8 @@ const obtenerValoresSeleccionados = () => {
 
     return todosSeleccionados;
 };
-const convertirYFormatearFecha = (fechaVue) => {
-  const fechaObj = new Date(fechaVue);
-  const año = fechaObj.getFullYear();
-  const mes = ('0' + (fechaObj.getMonth() + 1)).slice(-2);
-  const día = ('0' + fechaObj.getDate()).slice(-2);
-  const horas = ('0' + fechaObj.getHours()).slice(-2);
-  const minutos = ('0' + fechaObj.getMinutes()).slice(-2);
-  const segundos = ('0' + fechaObj.getSeconds()).slice(-2);
-  const formatoDeseado = `${año}-${mes}-${día}T${horas}:${minutos}:${segundos}`;
-  return formatoDeseado;
-};
 
-/**********************************CRUD********************************/
-
+/*****************************    CRUD    ********************************/
 const saveOrd = async () => {
     submitted.value = true;
     if (placa.value && selectedCliente.value.value && calendarValue.value) {
@@ -230,7 +298,7 @@ const saveOrd = async () => {
     }
 };
 
-/**********************************CANVAS********************************/
+/*****************************    CANVAS    ********************************/
 function drawImageOnCanvas(ctx, imageUrl, width, height) {
   const img = new Image();
   img.onload = () => {
@@ -303,13 +371,16 @@ const saveDrawing = (id) => {
         <div class="col-12">
             <div class="card">
                 <Toast />
-                <div class="section mb-5">
+                <div class="section mb-4">
                     <Toolbar>
                     <template v-slot:start>
-                        <Button icon="pi pi-arrow-left" class="p-button" style="background-color: #2e78ba;" />
+                        <Button icon="pi pi-arrow-left" class="p-button-secondary" />
                     </template>
                     <template v-slot:end>
-                        <label for="city">Orden Trabajo</label>
+                        <h2 class="noto-sans-font">
+                            <i class="pi pi-file-edit" style="font-size: 1.8rem; color: #779ecb;"></i>
+                           <label> Órden de Trabajo</label>
+                        </h2>
                     </template>
                 </Toolbar>
                 </div>
@@ -317,58 +388,58 @@ const saveDrawing = (id) => {
                 <div class="section">
                     <div class="p-fluid formgrid grid">
                         <div class="field col-12 md:col-3 mr-5">
-                            <label for="firstname2">Fecha</label>
-                            <Calendar :showIcon="true" :showButtonBar="true" v-model="calendarValue"></Calendar>
+                            <h5>Fecha</h5>
+                            <Calendar :showIcon="true" :showButtonBar="true" v-model="calendarValue" :icon="'pi pi-calendar'" ></Calendar>
                         </div>
                         <div class="field col-12 md:col-5 mr-8" >
-                            <label for="lastname2">Cliente</label>
+                            <h5>Cliente</h5>
                             <AutoComplete placeholder="Buscar" id="dd" :dropdown="true" :multiple="false" v-model="selectedCliente" 
                             :suggestions="autoFilteredValueCliente" @complete="BuscarCLiente($event)" field="label" required="true" autofocus :class="{ 'p-invalid': submitted && !selectedCliente }" />
                             <small class="p-invalid" v-if="submitted && !selectedCliente">se requiere Cliente </small>
                         </div>
                         <div class="field col-12 md:col-3">
-                            <label for="lastname2">Tanque de Gasolina</label>
+                            <h5>Tanque de Gasolina</h5>
                             <Knob v-model="knobValue" :step="10" :min="0" :max="100" valueTemplate="{value}%" />
                         </div>
                     </div>
                 </div>
                 <!-- Sección Datos del Vehículo -->
-                <div class="section">
+                <div class="section  mb-3">
                     <div class="p-fluid formgrid grid">
                         <div class="field col-12 md:col-3">
-                            <label for="city">Placa</label>
+                            <h5>Placa</h5>
                             <InputText v-model="placa" placeholder="AAC-0123" type="text" required="true" autofocus :class="{ 'p-invalid': submitted && !placa }" />
                             <small class="p-invalid" v-if="submitted && !placa">se requiere placa </small>
                         </div>
                         <div class="field col-12 md:col-3">
-                            <label for="state">Color</label>
+                            <h5>Color</h5>
                             <AutoComplete placeholder="Buscar" id="dd" :dropdown="true" :multiple="false" v-model="selectedColor" 
                             :suggestions="autoFilteredValueColor" @complete="BuscarColores($event)" field="maecolorDescripcion" required="true" autofocus :class="{ 'p-invalid': submitted && !selectedColor }" />
                             <small class="p-invalid" v-if="submitted && !selectedColor">se requiere Color </small>
 
                         </div>
                         <div class="field col-12 md:col-3">
-                            <label for="state">Marca</label>
+                            <h5>Marca</h5>
                             <AutoComplete placeholder="Buscar" id="dd" :dropdown="true" :multiple="false" v-model="selectedMarca" 
-                            :suggestions="autoFilteredValueMarca" @complete="BuscarMarcas($event)" field="vehmarmodNombre" required="true" autofocus :class="{ 'p-invalid': submitted && !selectedMarca }" />
+                            :suggestions="autoFilteredValueMarca" @complete="BuscarMarcas($event)" field="vehmarmodNombre" required="true" autofocus :class="{ 'p-invalid': submitted && !selectedMarca }"  />
                             <small class="p-invalid" v-if="submitted && !selectedMarca">se requiere Marca </small>
                         </div>
                         <div class="field col-12 md:col-3">
-                            <label for="city">Kilometraje</label>
-                            <InputNumber v-model="km" showButtons mode="decimal" ref="kil"></InputNumber>
+                            <h5>Kilometraje</h5>
+                            <InputNumber v-model="km" showButtons mode="decimal" ref="kil" incrementButtonClass="p-button-info" decrementButtonClass="p-button-info"></InputNumber>
                         </div>
                     </div>
                 </div>
-                <!-- Sección Observaciones -->
+                <!-- Sección Inventario -->
                 <div class="section">
-                    <h5>Inventario de Vehiculo</h5>
+                    <h5 class="noto-sans-font">INVENTARIO VEHÍCULO</h5>
                     <div class="p-fluid formgrid grid">
-                        <div class="field col-12 md:col-4">
-                            <Panel header="Interiores" :toggleable="true">
+                        <div class="field col-12 md:col-4" >
+                            <Panel header="INTERIORES" :toggleable="true" class="int">
                                 <div v-for="item in interior" :key="item.invCodigo" class="mb-2">
                                     <label>
                                         <input type="checkbox" v-model="item.selected" :value="item.invCodigo">
-                                        <label for="checkbox" class="mr-4">{{item.invDescrip }}</label>
+                                        <label  for="checkbox" class="descrip mr-4">{{item.invDescrip }}</label>
                                         <template v-if="['1', '2',  '3', '12', '13', '14'].includes(item.invCodigo)">
                                             <InputText type="text" v-model="item.texto"  style="padding: 4px; border: 1px solid #ccc; width: 7em;" />
                                         </template>
@@ -377,24 +448,26 @@ const saveDrawing = (id) => {
                             </Panel>
                         </div>
                         <div class="field col-12 md:col-4">
-                            <Panel header="Exteriores" :toggleable="true">
+                            <div class="custom-panel">
+                                <Panel header="EXTERIORES" :toggleable="true" class="ext">
                                 <div v-for="item in exterior" :key="item.invCodigo" class="mb-2">
                                     <label>
                                         <input type="checkbox" v-model="item.selected" :value="item.invCodigo">
-                                        <label for="checkbox" class="mr-4">{{item.invDescrip }}</label>
+                                        <label for="checkbox" class="descrip mr-4">{{item.invDescrip }}</label>
                                         <template v-if="['22', '23'].includes(item.invCodigo)">
                                             <InputText type="text" v-model="item.texto" style="padding: 4px; border: 1px solid #ccc; width: 7em;" />
                                         </template>
                                     </label>
                                 </div>
-                            </Panel>
+                               </Panel>
+                            </div>
                         </div>
                         <div class="field col-12 md:col-4">
-                            <Panel header="Accesorios" :toggleable="true">
+                            <Panel header="ACCESORIOS" :toggleable="true" class="acs">
                                 <div v-for="item in accesorios" :key="item.invCodigo" class="mb-2">
                                     <label>
                                         <input type="checkbox" v-model="item.selected" :value="item.invCodigo">
-                                        <label for="checkbox">{{item.invDescrip }}</label>
+                                        <label for="checkbox" class="descrip">{{item.invDescrip }}</label>
                                     </label>
                                 </div>
                             </Panel>
@@ -403,7 +476,7 @@ const saveDrawing = (id) => {
                 </div>
                 <!-- Sección Servicios -->
                 <div class="section">
-                    <h5>Servicios</h5>
+                    <h5 class="noto-sans-font">SERVICIOS</h5>
                     <div class="p-fluid formgrid grid">
                         <div class="field col-11 md:col-12">
                             <MultiSelect v-model="multiselectServicio" :options="multiselectServicios" optionLabel="serDescrip" placeholder="Select Countries" :filter="true"
@@ -428,7 +501,7 @@ const saveDrawing = (id) => {
                 </div>                
                 <!-- Sección Foto -->
                 <div class="section">
-                    <h5>Daños</h5>
+                    <h5 class="noto-sans-font">DAÑOS</h5>
                     <div class="p-fluid formgrid grid">
                         <div class="field col-12 md:col-1 ">
                             <Button label="Borrar" class="p-button-secondary" @click="clearDrawings" />
@@ -440,7 +513,7 @@ const saveDrawing = (id) => {
                 </div>
                 <!-- Sección Observaciones -->
                 <div class="section">
-                    <h5>Observaciones</h5>
+                    <h5 class="noto-sans-font">OBSERVACIONES</h5>
                     <div class="p-fluid formgrid grid">
                         <div class="field col-12">
                             <Textarea id="address" rows="4" v-model="observaciones"/>
@@ -460,15 +533,35 @@ const saveDrawing = (id) => {
     </div>
 </template>
 
-<style>
+
+<style scoped lang="scss">
+@import '@/assets/demo/styles/badges.scss';
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap'); 
 .field canvas {
   width: 100%; /* Asegura que el canvas ocupe el 100% del ancho del contenedor */
   height: 100%; /* Asegura que el canvas ocupe el 100% de la altura del contenedor */
 }
-</style>
-
-
-
-<style scoped lang="scss">
-@import '@/assets/demo/styles/badges.scss';
+:deep(.int .p-panel-header) {
+    background-color: #198bba; /* Azul */
+    color: #ffffff; /* Texto blanco */
+    font-size: 1.1em; 
+}
+:deep(.ext .p-panel-header) {
+    background-color: #28a745; /* Verde */
+    color: #ffffff; /* Texto blanco */
+    font-size: 1.1em; 
+}
+:deep(.acs .p-panel-header) {
+    background-color: #FF902B; /* Amarillo */
+    color: #ffffff; /* Texto blanco */
+    font-size: 1.1em; 
+}
+.descrip {
+    font-weight: bold;
+}
+:deep(.p-calendar-button) {
+    background-color: #ff5733; /* Cambia el color de fondo del botón */
+    color: #ffffff; /* Cambia el color del texto del botón */
+    /* Otros estilos que desees aplicar al botón */
+}
 </style>

@@ -57,10 +57,10 @@ export default class OrdTrabDetInvService {
         }
     }    
 
-    async getClienteById(anio, codigo) {
+    async getInvById(codigo, anio) {
         try {
             // Realiza la llamada a la API para obtener el cliente por su año y código
-            const response = await axios.get(`${this.baseUrl}VenMaecliente/${anio}/${codigo}`);
+            const response = await axios.get(`${this.baseUrl}DetOrdInventario/det/${codigo}/${anio}`);
             console.warn(response);
             // Devuelve el cliente obtenido de la API
             return response.data;

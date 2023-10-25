@@ -166,11 +166,11 @@ const router = createRouter({
                     props: true
                 },
                 {
-                    path: '/pages/formOrdenTrabajo',
+                    path: '/pages/formOrdenTrabajo/:num?/:selectedYearValue?',
                     name: 'formOrdenTrabajo',
                     component: () => import('@/views/pages/FormOrdenTrabajo.vue'),
                     props: true
-                },
+                },                
                 {
                     path: '/documentation',
                     name: 'documentation',

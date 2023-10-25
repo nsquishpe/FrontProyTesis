@@ -46,5 +46,36 @@ export default class InvVehiculoService {
             return []; // Devuelve un array vacío en caso de error
         }
     }
+    async dividirInventario(inventario) {
+        try {
+            const interiores = inventario.filter(objeto => {
+                const invCodigoInt = parseInt(objeto.invCodigo, 10);
+                return invCodigoInt >= 1 && invCodigoInt <= 14;
+            });
+    
+            const exteriores = inventario.filter(objeto => {
+                const invCodigoInt = parseInt(objeto.invCodigo, 10);
+                return invCodigoInt >= 15 && invCodigoInt <= 23;
+            });
+    
+            const accesorios = inventario.filter(objeto => {
+                const invCodigoInt = parseInt(objeto.invCodigo, 10);
+                return invCodigoInt >= 24 && invCodigoInt <= 27;
+            });
+    
+            return {
+                interiores,
+                exteriores,
+                accesorios
+            };
+        } catch (error) {
+            console.error('Error al dividir el inventario:', error);
+            return {
+                interiores: [],
+                exteriores: [],
+                accesorios: []
+            };
+        }
+    }
     
 }

@@ -50,6 +50,14 @@ const Nuevo = () => {
   router.push({ name: 'formOrdenTrabajo' });
 };
 
+const Editar = async (editOrden) => {
+  const selectedYearValue = selectedYear.value.value; 
+  cliente.value = { ...editOrden };
+  const num = cliente.value.ordNumero;
+  router.push({ name: 'formOrdenTrabajo', params: { num, selectedYearValue } });
+};
+
+
 const RefreshClientes = async () => {
     const selectedYearValue = selectedYear.value.value; 
     const data = await ordTrabCabService.getOrdenes(selectedYearValue);
@@ -204,7 +212,7 @@ const initFilters = () => {
                     </Column>
                     <Column headerStyle="min-width:9rem;">
                         <template #body="slotProps">
-                            <Button icon="pi pi-pencil" class="p-button-rounded p-button mr-2" @click="editCliente(slotProps.data)" style="background-color: #2e78ba;"/>
+                            <Button icon="pi pi-pencil" class="p-button-rounded p-button mr-2" @click="Editar(slotProps.data)" style="background-color: #2e78ba;"/>
                             <Button icon="pi pi-trash" class="p-button-rounded p-button-danger mr-2" @click="confirmDeleteProduct(slotProps.data)" />
                         </template>
                     </Column>
