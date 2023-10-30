@@ -118,7 +118,10 @@ const initFilters = () => {
                 >
                     <template #header>
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                            <h5 class="m-0">Administrar Inventario</h5>
+                            <h4 class="noto-sans-font">
+                                <i class="pi pi-fw pi-folder mr-3" style="font-size: 1.8rem; color: #779ecb;"></i>
+                                <label>Administrar Inventario</label>
+                            </h4>
                             <span class="block mt-2 md:mt-0 p-input-icon-left">
                                 <i class="pi pi-search" />
                                 <InputText v-model="filters['global'].value" placeholder="Buscar..." />
@@ -126,41 +129,41 @@ const initFilters = () => {
                         </div>
                     </template>
 
-                    <Column field="artCodigo" header="Código" :sortable="true" headerStyle="width:8%; min-width:10rem;">
+                    <Column field="artCodigo" header="CÓDIGO" :sortable="true" headerStyle="width:8%; min-width:10rem;">
                         <template #body="slotProps">
                             {{ slotProps.data.artCodigo }}
                         </template>
                     </Column>
-                    <Column field="artNombre" header="Descripción" :sortable="true" headerStyle="width:30%; min-width:10rem;">
+                    <Column field="artNombre" header="DESCRIPCIÓN" :sortable="true" headerStyle="width:30%; min-width:10rem;">
                         <template #body="slotProps">
                             {{ slotProps.data.artNombre }}
                         </template>
                     </Column>
-                    <Column field="grupNombre" header="Categoría" :sortable="true" headerStyle="width:8%; min-width:8rem;">
+                    <Column field="grupNombre" header="CATEGORÍA" :sortable="true" headerStyle="width:8%; min-width:8rem;">
                         <template #body="slotProps">
                             {{ formatCurrency(slotProps.data.grupNombre) }}
                         </template>
                     </Column>
-                    <Column field="precio" header="Precio" :sortable="true" headerStyle="width:8%; min-width:8rem;">
+                    <Column field="precio" header="PRECIO" :sortable="true" headerStyle="width:8%; min-width:8rem;">
                         <template #body="slotProps">
                             {{ formatCurrency(slotProps.data.precio) }}
                         </template>
                     </Column>
-                    <Column field="stock" header="Stock" :sortable="true" headerStyle="width:8%; min-width:10rem;">
+                    <Column field="stock" header="STOCK" :sortable="true" headerStyle="width:8%; min-width:10rem;">
                         <template #body="slotProps">
                             {{ slotProps.data.stock }}
                         </template>
                     </Column>
-                    <Column field="inventoryStatus" header="Status" :sortable="true" headerStyle="width:8%; min-width:10rem;">
+                    <Column field="inventoryStatus" header="STATUS" :sortable="true" headerStyle="width:8%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Status</span>
                             <span :class="'product-badge status-' + (slotProps.data.inventoryStatus ? slotProps.data.inventoryStatus.toLowerCase() : '')">{{ slotProps.data.inventoryStatus }}</span>
                         </template>
                     </Column>
                     <Column style="width: 15%">
-                        <template #header> Visualizar </template>
+                        <template #header> VISUALIZAR </template>
                         <template #body="slotProps">
-                            <Button icon="pi pi-search" type="button" class="p-button-rounded p-button mr-2" style="background-color: #2e78ba;" @click="goDetalleKardex(selectedYear, slotProps.data.artCodigo, slotProps.data.artNombre, slotProps.data.stock)"></Button>
+                            <Button icon="pi pi-search" type="button"  class="p-button-rounded p-button mr-2" style="background-color: #2e78ba;" @click="goDetalleKardex(selectedYear, slotProps.data.artCodigo, slotProps.data.artNombre, slotProps.data.stock)"></Button>
                         </template>
                     </Column>
                 </DataTable>

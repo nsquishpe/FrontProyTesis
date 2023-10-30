@@ -197,10 +197,10 @@ const toggle = () => {
                 <h5>Splitter</h5>
 
                 <Splitter style="height: 300px" class="mb-5">
-                    <SplitterPanel :size="30" :minSize="10" style="overflow: scroll">
+                    <SplitterPanel :size="50" :minSize="10" style="overflow: scroll">
                         <div className="h-full flex align-items-center justify-content-center">Panel 1</div>
                     </SplitterPanel>
-                    <SplitterPanel :size="70" style="overflow: scroll">
+                    <SplitterPanel :size="50" style="overflow: scroll">
                         <Splitter layout="vertical">
                             <SplitterPanel :size="15">
                                 <div className="h-full flex align-items-center justify-content-center">Panel 2</div>

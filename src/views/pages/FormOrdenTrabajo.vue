@@ -10,6 +10,8 @@ import ServicioService from '@/service/ServicioService';
 import InvVehiculoService from '@/service/InvVehiculoService';
 import { useToast } from 'primevue/usetoast';
 import { useRouter } from 'vue-router'; 
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const router = useRouter();
 const { num, selectedYearValue } = defineProps(['num', 'selectedYearValue']);
@@ -127,15 +129,18 @@ const ObtenerDatosEdicion = async (num, selectedYearValue) => {
       serCodigo: servicio.serCodigo
     }));
 
-    actualizarElementos(interior.value, int, ['1', '2', '3', '12', '13', '14']);
-    actualizarElementos(exterior.value, ext, ['22', '23']);
+    actualizarElementos(interior.value, int, ['1', '2',  '3', '21', '22']);
+    actualizarElementos(exterior.value, ext, ['23', '24','25','26']);
     actualizarElementos(accesorios.value, acs, []);
+    console.log(int);
+    console.log(ext);
+    console.log(acs);
 };
 
 /*****************************    CARGAR PAG    ********************************/
 const inicializarDatos = async () => {
     try {
-        const [clientes, colores, marcas, , interiorData, exteriorData, accesoriosData] = await Promise.all([
+        const [clientes, colores, marcas, servs, interiorData, exteriorData, accesoriosData] = await Promise.all([
             clienteService.getClientes(year),
             colorService.getColores(),
             marcaService.getMarcas(),
@@ -274,6 +279,7 @@ const saveOrd = async () => {
         });
         //INVENTARIO
         const invs =  obtenerValoresSeleccionados();
+        console.log(invs);
         invs.forEach(item => {
             item.ordAnio = year;
             item.ordNumero = newCab.OrdNumero;
@@ -364,6 +370,18 @@ const saveDrawing = (id) => {
   console.log('Imagen guardada en:', downloadUrl);
   return downloadUrl;
 };
+
+const generatePDF = () => {
+    const element = document.querySelector('.grid'); // selector de clase que engloba tu contenido
+            html2canvas(element).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 210; // mm (ancho A4)
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                pdf.save('reporte.pdf');
+ });
+};
 </script>
 
 <template>
@@ -374,13 +392,16 @@ const saveDrawing = (id) => {
                 <div class="section mb-4">
                     <Toolbar>
                     <template v-slot:start>
-                        <Button icon="pi pi-arrow-left" class="p-button-secondary" />
+                        <Button icon="pi pi-arrow-left" class="p-button-secondary mr-4" />
+                        <!--- <Button label="Exportar PDF" icon="pi pi-file-pdf" class="p-button-text p-button-info" style="font-size: 1.2em;" @click="generatePDF" />-->
                     </template>
                     <template v-slot:end>
                         <h2 class="noto-sans-font">
-                            <i class="pi pi-file-edit" style="font-size: 1.8rem; color: #779ecb;"></i>
+                            <i class="pi pi-wrench" style="font-size: 1.8rem; color: #779ecb;"></i>
                            <label> Órden de Trabajo</label>
                         </h2>
+                        <div class="section">
+                    </div>
                     </template>
                 </Toolbar>
                 </div>
@@ -399,12 +420,12 @@ const saveDrawing = (id) => {
                         </div>
                         <div class="field col-12 md:col-3">
                             <h5>Tanque de Gasolina</h5>
-                            <Knob v-model="knobValue" :step="10" :min="0" :max="100" valueTemplate="{value}%" />
+                            <Knob v-model="knobValue" :step="10" :min="0" :max="100" valueTemplate="{value}%"  valueColor="MediumTurquoise" />
                         </div>
                     </div>
                 </div>
                 <!-- Sección Datos del Vehículo -->
-                <div class="section  mb-3">
+                <div class="section  mb-4">
                     <div class="p-fluid formgrid grid">
                         <div class="field col-12 md:col-3">
                             <h5>Placa</h5>
@@ -426,13 +447,16 @@ const saveDrawing = (id) => {
                         </div>
                         <div class="field col-12 md:col-3">
                             <h5>Kilometraje</h5>
-                            <InputNumber v-model="km" showButtons mode="decimal" ref="kil" incrementButtonClass="p-button-info" decrementButtonClass="p-button-info"></InputNumber>
+                            <InputNumber v-model="km" showButtons mode="decimal" ref="kil" incrementButtonClass="p-button-secondary" decrementButtonClass="p-button-secondary"></InputNumber>
                         </div>
                     </div>
                 </div>
                 <!-- Sección Inventario -->
-                <div class="section">
-                    <h5 class="noto-sans-font">INVENTARIO VEHÍCULO</h5>
+                <div class="section mb-3">
+                    <h5 class="noto-sans-font">
+                            <i class="pi pi-car mr-2" style="font-size: 1.5rem;"></i>
+                           <strong>INVENTARIO VEHÍCULO</strong>
+                    </h5>
                     <div class="p-fluid formgrid grid">
                         <div class="field col-12 md:col-4" >
                             <Panel header="INTERIORES" :toggleable="true" class="int">
@@ -440,7 +464,7 @@ const saveDrawing = (id) => {
                                     <label>
                                         <input type="checkbox" v-model="item.selected" :value="item.invCodigo">
                                         <label  for="checkbox" class="descrip mr-4">{{item.invDescrip }}</label>
-                                        <template v-if="['1', '2',  '3', '12', '13', '14'].includes(item.invCodigo)">
+                                        <template v-if="['1', '2',  '3', '21', '22'].includes(item.invCodigo)">
                                             <InputText type="text" v-model="item.texto"  style="padding: 4px; border: 1px solid #ccc; width: 7em;" />
                                         </template>
                                     </label>
@@ -454,7 +478,7 @@ const saveDrawing = (id) => {
                                     <label>
                                         <input type="checkbox" v-model="item.selected" :value="item.invCodigo">
                                         <label for="checkbox" class="descrip mr-4">{{item.invDescrip }}</label>
-                                        <template v-if="['22', '23'].includes(item.invCodigo)">
+                                        <template v-if="['23', '24','25','26'].includes(item.invCodigo)">
                                             <InputText type="text" v-model="item.texto" style="padding: 4px; border: 1px solid #ccc; width: 7em;" />
                                         </template>
                                     </label>
@@ -475,8 +499,11 @@ const saveDrawing = (id) => {
                     </div>
                 </div>
                 <!-- Sección Servicios -->
-                <div class="section">
-                    <h5 class="noto-sans-font">SERVICIOS</h5>
+                <div class="section mb-3">
+                    <h5 class="noto-sans-font">
+                           <i class="pi pi-cog mr-1" style="font-size: 1.4rem; "></i>
+                           <strong>SERVICIOS</strong>
+                    </h5>
                     <div class="p-fluid formgrid grid">
                         <div class="field col-11 md:col-12">
                             <MultiSelect v-model="multiselectServicio" :options="multiselectServicios" optionLabel="serDescrip" placeholder="Select Countries" :filter="true"
@@ -500,8 +527,11 @@ const saveDrawing = (id) => {
                     </div>
                 </div>                
                 <!-- Sección Foto -->
-                <div class="section">
-                    <h5 class="noto-sans-font">DAÑOS</h5>
+                <div class="section mb-3">
+                    <h5 class="noto-sans-font">
+                            <i class="pi pi-times-circle mr-1" style="font-size: 1.3rem;"></i>
+                           <strong>DAÑOS</strong>
+                    </h5>
                     <div class="p-fluid formgrid grid">
                         <div class="field col-12 md:col-1 ">
                             <Button label="Borrar" class="p-button-secondary" @click="clearDrawings" />
@@ -513,7 +543,10 @@ const saveDrawing = (id) => {
                 </div>
                 <!-- Sección Observaciones -->
                 <div class="section">
-                    <h5 class="noto-sans-font">OBSERVACIONES</h5>
+                    <h5 class="noto-sans-font">
+                            <i class="pi pi-pencil mr-1" style="font-size: 1.2rem;"></i>
+                           <strong>OBSERVACIONES</strong>
+                    </h5>
                     <div class="p-fluid formgrid grid">
                         <div class="field col-12">
                             <Textarea id="address" rows="4" v-model="observaciones"/>
@@ -537,31 +570,4 @@ const saveDrawing = (id) => {
 <style scoped lang="scss">
 @import '@/assets/demo/styles/badges.scss';
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap'); 
-.field canvas {
-  width: 100%; /* Asegura que el canvas ocupe el 100% del ancho del contenedor */
-  height: 100%; /* Asegura que el canvas ocupe el 100% de la altura del contenedor */
-}
-:deep(.int .p-panel-header) {
-    background-color: #198bba; /* Azul */
-    color: #ffffff; /* Texto blanco */
-    font-size: 1.1em; 
-}
-:deep(.ext .p-panel-header) {
-    background-color: #28a745; /* Verde */
-    color: #ffffff; /* Texto blanco */
-    font-size: 1.1em; 
-}
-:deep(.acs .p-panel-header) {
-    background-color: #FF902B; /* Amarillo */
-    color: #ffffff; /* Texto blanco */
-    font-size: 1.1em; 
-}
-.descrip {
-    font-weight: bold;
-}
-:deep(.p-calendar-button) {
-    background-color: #ff5733; /* Cambia el color de fondo del botón */
-    color: #ffffff; /* Cambia el color del texto del botón */
-    /* Otros estilos que desees aplicar al botón */
-}
 </style>

@@ -1,11 +1,15 @@
 <script setup>
-import { ref, onMounted, onBeforeMount } from 'vue';
+import {ref, onMounted, onBeforeMount } from 'vue';
 import VehiculoService from '@/service/VehiculoService';
 import VenEncfacService from '@/service/VenEncfacService';
 import VenDetfacService from '@/service/VenDetfacService';
 import { FilterMatchMode } from 'primevue/api';
+import { useToast } from 'primevue/usetoast';
+
+const toast = useToast();
 const { anio, encfacNumero, vhcspcfPlaca } = defineProps(['anio', 'encfacNumero', 'vhcspcfPlaca']);
 
+const observaciones = ref(null);
 console.log("Año:", anio);
 console.log("Número de factura:", encfacNumero);
 console.log("Placa:", vhcspcfPlaca);
@@ -78,6 +82,34 @@ const initFilters = () => {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS }
     };
 };
+
+const displayConfirmation = ref(false);
+
+const openConfirmation = () => {
+    displayConfirmation.value = true;
+};
+
+const closeConfirmation = (saved) => {
+    displayConfirmation.value = false;
+    if (saved && observaciones.value.trim() !== "") {
+        // Guardar el valor del textarea y mostrar el toast
+        guardarValorDelTextarea(observaciones.value);
+        mostrarToast();
+    }
+    else{
+        observaciones.value='';
+    }
+};
+
+const guardarValorDelTextarea = (valor) => {
+    // Lógica para guardar el valor del textarea (por ejemplo, enviar a la API)
+    console.log("Valor del textarea guardado:", valor);
+};
+
+const mostrarToast = () => {
+    // Lógica para mostrar un toast con el mensaje proporcionado
+    toast.add({ severity: 'success', summary: 'Exitoso', detail: 'Garantía Actualizada', life: 3000 });
+};
 </script>
 
 
@@ -86,21 +118,33 @@ const initFilters = () => {
 <div class="grid" >
   <div class="col-12">
     <div class="card">
-      <Toolbar class="mb-1">
+      <Toolbar class="mb-0.5">
                     <template v-slot:start>
-                        <Button icon="pi pi-arrow-left" class="p-button-secondary" />
+                        <Button icon="pi pi-arrow-left" class="p-button-secondary mr-2" />
+                        <Button label="Garantía"  icon="pi pi pi-verified" class="p-button-success" @click="openConfirmation" />
+                        <Toast />
+                        <Dialog header="Retorno Garantía" v-model:visible="displayConfirmation" :style="{ width: '350px' }" :modal="true">
+                            <div class="flex align-items-center justify-content-center" style="width: 100%;">
+                                <Textarea  rows="5" v-model="observaciones"></Textarea>
+                            </div>
+                            <template #footer>
+                                <Button label="No" icon="pi pi-times" @click="closeConfirmation(false)" class="p-button-text p-button-danger" autofocus />
+                                <Button label="Sí" icon="pi pi-check" @click="closeConfirmation(true)" class="p-button-text p-button-success"  />
+                            </template>
+                        </Dialog>
                     </template>
                     <template v-slot:end>
-                      <div>
-                        <h4>
-                              <span style="font-weight: bold;">Factura:</span> {{ encfacNumero }}
-                        </h4>
-                        <div class="info-item" style="color: black;" >
-                            <span style="font-weight: bold;">Fecha:</span> {{ encfac.encfacFechaemision }}
-                        </div>
-                        <div class="info-item" style="color: black;">
-                            <span style="font-weight: bold;">Usuario:</span> {{ encfac.usuIdentificacion }}
-                        </div>
+                      <div >
+                        <h2 class="noto-sans-font mb-2">
+                            <i class="pi pi-calculator" style="font-size: 1.8rem; color: #779ecb;"></i>
+                           <label> Factura: </label>{{ encfacNumero }}
+                        </h2>
+                        <h6 class="noto-sans-font" style="text-align: right;">
+                            <label style="font-weight: bold;">Fecha:</label> {{ encfac.encfacFechaemision }}
+                        </h6>
+                        <h6 class="noto-sans-font" style="text-align: right;">
+                            <label style="font-weight: bold;">Usuario:</label> {{ encfac.usuIdentificacion }}
+                        </h6>
                     </div>
                     </template>
       </Toolbar>
@@ -109,7 +153,7 @@ const initFilters = () => {
             <div class="field col-12 md:col-6">
                 <Panel header="PROPIETARIO" :toggleable="true">
                     <div class="text-900 font-medium text-xl">
-                        <i class="pi pi-user" style="font-size: 1.8rem; color: #779ecb; margin-right: 0.75rem;"></i>
+                        <i class="custom-icon2 mr-2"></i>
                         <label class="mr-2" > {{ encfac.cliNombre }} - </label>
                         <Label>{{ encfac.cliCodigo }}</Label>
                     </div>
@@ -118,7 +162,7 @@ const initFilters = () => {
             <div class="field col-12 md:col-6">
                 <Panel header="VEHÍCULO" :toggleable="true">
                     <div class="text-900 font-medium text-xl">
-                        <i class="pi pi-car" style="font-size: 1.8rem; color: #779ecb; margin-right: 0.75rem;"></i>
+                        <i class="custom-icon mr-3"></i>
                         <label class="mr-3" >{{ vehiculo.vhcspcfMarcaDescrip }}</label>
                         <Tag class="placa mr-7"  style="font-size: 16px;">{{ vhcspcfPlaca }}</Tag>
                         <label class="mr-2"> {{ vehiculo.vhcspcfColor}} -</label>
@@ -144,12 +188,12 @@ const initFilters = () => {
                             <h5 class="m-0">Detalle</h5>
                             <span class="block mt-2 md:mt-0 p-input-icon-left">
                                 <i class="pi pi-search" />
-                                <InputText v-model="filters['global'].value" placeholder="Buscar..." />
+                                <InputText v-model="filters['global'].value" placeholder="Buscar detalle" />
                             </span>
                         </div>
                     </template>
                     <Column   field="detfacTipodet" 
-                        header="Tipo" 
+                        header="TIPO" 
                         :sortable="false" 
                         :headerStyle="{ backgroundColor: '#E1F5FE' }" >
                         <template #body="slotProps">
@@ -157,7 +201,7 @@ const initFilters = () => {
                         </template>
                     </Column>
                     <Column   field="detfacCodigo" 
-                        header="Código" 
+                        header="CÓDIGO" 
                         :sortable="false" 
                         :headerStyle="{ backgroundColor: '#E1F5FE' }" >
                         <template #body="slotProps">
@@ -166,7 +210,7 @@ const initFilters = () => {
                         </template>
                     </Column>
                     <Column field="detfacDescripcion"  
-                        header="Descripción" 
+                        header="DESCRIPCIÓN" 
                         :sortable="false" 
                         :headerStyle="{ backgroundColor: '#E1F5FE' }">
                         <template #body="slotProps">
@@ -174,7 +218,7 @@ const initFilters = () => {
                         </template>
                     </Column>
                     <Column field="detfacCantidad"  
-                        header="Cantidad" 
+                        header="CANTIDAD" 
                         :sortable="false" 
                         :headerStyle="{ backgroundColor: '#E1F5FE' }">
                         <template #body="slotProps">
@@ -183,7 +227,7 @@ const initFilters = () => {
                         </template>
                     </Column>
                     <Column field="detfacPrecio" 
-                        header="Precio" 
+                        header="PRECIO" 
                         :sortable="true" 
                         :headerStyle="{ backgroundColor: '#E1F5FE' }">
                         <template #body="slotProps">
@@ -192,7 +236,7 @@ const initFilters = () => {
                         </template>
                     </Column>
                     <Column field="detfacDescuento"  
-                        header="% Descuento" 
+                        header="%DESCUENTO" 
                         :sortable="false" 
                         :headerStyle="{ backgroundColor: '#E1F5FE' }">
                         <template #body="slotProps">
@@ -201,16 +245,16 @@ const initFilters = () => {
                         </template>
                     </Column>
                     <Column field="detfacTotal"  
-                        header="Total" 
+                        header="TOTAL" 
                         :sortable="false" 
                         :headerStyle="{ backgroundColor: '#E1F5FE' }">
                         <template #body="slotProps">
                             <span class="p-column-title">Code</span>
-                            {{ slotProps.data.detfacTotal }}
+                            {{ formatCurrency(slotProps.data.detfacTotal) }}
                         </template>
                     </Column>
                     <Column field="detfacEmpleado"  
-                        header="Tec" 
+                        header="TEC" 
                         :sortable="false" 
                         :headerStyle="{ backgroundColor: '#E1F5FE' }">
                         <template #body="slotProps">
@@ -222,15 +266,15 @@ const initFilters = () => {
 
     <!-- Fila adicional después del DataTable -->
     <div id="invoice-top" style="text-align: right; max-width: 90%; margin: 0 auto;">
-        <div class="label mb-2">
-            <span style="font-weight: bold;">Total Neto: </span> {{encfac.encfacTotalneto}}
-        </div>
-        <div class="label mb-2">
-            <span style="font-weight: bold;">Valor IVA: </span> {{encfac.encfacValoriva }}
-        </div>
-        <div class="label mb-2">
-            <span style="font-weight: bold;">TOTAL: </span> {{encfac.encfacTotal}}
-        </div>
+        <h5 class="noto-sans-font mb-2" style="text-align: right;">
+            <label style="font-weight: bold;">Total Neto:</label> {{ encfac.encfacTotalneto}}
+        </h5>
+        <h5 class="noto-sans-font mb-2" style="text-align: right;">
+            <label style="font-weight: bold;">Valor IVA:</label> {{ encfac.encfacValoriva}}
+        </h5>
+        <h5 class="noto-sans-font mb-2" style="text-align: right;">
+            <label style="font-weight: bold;">TOTAL:</label> {{ encfac.encfacTotal}}
+        </h5>
     </div>
     </div>
   </div>
@@ -258,6 +302,41 @@ export default {
     align-items: center;
     text-align: center; /* Asegura que el texto dentro del div esté centrado */
     height: 100%; /* Ajusta la altura según sea necesario */
+}
+:deep(.p-panel .p-panel-header) {
+    background-color: var(--teal-500);
+    border-color: var(--teal-500);
+    color: #ffffff;
+    font-size: 1.1em; 
+    text-align: center; 
+}
+
+:deep(.p-panel .p-panel-content) {
+    border-color: var(--teal-500);
+}
+.custom-icon {
+    display: inline-block;
+    width: 3rem; /* Establece el ancho del icono */
+    height: 3rem; /* Establece la altura del icono */
+    background-image: url('/demo/images/login/auto.png'); /* Ruta de la imagen de la foto del propietario */
+    background-size: cover; /* Ajusta la imagen para cubrir completamente el contenedor */
+    background-repeat: no-repeat; /* Evita la repetición de la imagen */
+    background-position: center center; /* Centra la imagen en el contenedor */
+    border-radius: 50%; /* Redondea las esquinas para que la imagen tenga forma circular */
+    margin-right: 0.75rem; /* Margen a la derecha del icono */
+    vertical-align: middle; /* Alinea verticalmente el icono en línea con el texto */
+}
+.custom-icon2 {
+    display: inline-block;
+    width: 3rem; /* Establece el ancho del icono */
+    height: 3rem; /* Establece la altura del icono */
+    background-image: url('/demo/images/login/usuario.png'); /* Ruta de la imagen de la foto del propietario */
+    background-size: cover; /* Ajusta la imagen para cubrir completamente el contenedor */
+    background-repeat: no-repeat; /* Evita la repetición de la imagen */
+    background-position: center center; /* Centra la imagen en el contenedor */
+    border-radius: 50%; /* Redondea las esquinas para que la imagen tenga forma circular */
+    margin-right: 0.75rem; /* Margen a la derecha del icono */
+    vertical-align: middle; /* Alinea verticalmente el icono en línea con el texto */
 }
 
 </style>

@@ -77,7 +77,7 @@ const saveCliente = async () => {
       if (existingCliente && campoCodigoNoEditable) {
         // Si el cliente existe, estamos editando
         const updatedCliente = {
-            anio: '2023',
+            anio: selectedYearValue,
             cliCodigo: cliente.value.cliCodigo,
             cliNombrec: cliente.value.cliNombre,
             cliNombre: cliente.value.cliNombre,
@@ -227,10 +227,10 @@ const initFilters = () => {
                 >
                     <template #header >
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center" >
-                            <div class="icon-label">
+                            <h4 class="noto-sans-font">
                                 <i class="pi pi-user mr-3" style="font-size: 1.8rem; color: #779ecb;"></i>
                                 <label>Administrar Clientes</label>
-                            </div>
+                            </h4>
                             <span class="block mt-2 md:mt-0 p-input-icon-left">
                                 <i class="pi pi-search" />
                                 <InputText v-model="filters['global'].value" placeholder="Buscar..." />
@@ -238,31 +238,31 @@ const initFilters = () => {
                         </div>
                     </template>
 
-                    <Column field="cliCodigo" header="Código" :sortable="false" headerStyle="width:16%; min-width:10rem;">
+                    <Column field="cliCodigo" header="CÓDIGO" :sortable="false" headerStyle="width:16%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Code</span>
                             {{ slotProps.data.cliCodigo }}
                         </template>
                     </Column>
-                    <Column field="cliNombre" header="Nombre" :sortable="true" headerStyle="width:16%; min-width:10rem;">
+                    <Column field="cliNombre" header="NOMBRE" :sortable="true" headerStyle="width:16%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Name</span>
                             {{ slotProps.data.cliNombre }}
                         </template>
                     </Column>
-                    <Column field="cliTelefono1" header="Teléfono" :sortable="false" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="cliTelefono1" header="TELÉFONO" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Category</span>
                             {{ slotProps.data.cliTelefono1 }}
                         </template>
                     </Column>
-                    <Column field="cliCorreo" header="Correo" :sortable="false" headerStyle="width:16%; min-width:10rem;">
+                    <Column field="cliCorreo" header="CORREO" :sortable="false" headerStyle="width:16%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Category</span>
                             {{ slotProps.data.cliCorreo }}
                         </template>
                     </Column>
-                    <Column field="cliDireccion1" header="Dirección" :sortable="false" headerStyle="width:18%; min-width:10rem;">
+                    <Column field="cliDireccion1" header="DIRECCIÓN" :sortable="false" headerStyle="width:18%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Category</span>
                             {{ slotProps.data.cliDireccion1 }}
@@ -323,7 +323,7 @@ const initFilters = () => {
                     </template>
                 </Dialog>
 
-                <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+                <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirmación" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                         <span v-if="cliente"

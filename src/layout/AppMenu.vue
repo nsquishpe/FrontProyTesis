@@ -9,13 +9,7 @@ const model = ref([
         items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
     },
     {
-        label: 'UI Components',
-        items: [
-            { label: 'Chart', icon: 'pi pi-fw pi-chart-bar', to: '/uikit/charts' }
-        ]
-    },
-    {
-        label: 'Pages',
+        label: 'Módulos',
         icon: 'pi pi-fw pi-briefcase',
         to: '/pages',
         items: [
@@ -36,34 +30,13 @@ const model = ref([
             },
             {
                 label: 'Órdenes de Trabajo',
-                icon: 'pi pi-fw pi-file-edit',
+                icon: 'pi pi-fw pi-wrench',
                 to: '/pages/ordenTrabajo'
             },
             {
                 label: 'Empty',
                 icon: 'pi pi-fw pi-circle-off',
                 to: '/pages/empty'
-            },
-            {
-                label: 'Auth',
-                icon: 'pi pi-fw pi-user',
-                items: [
-                    {
-                        label: 'Login',
-                        icon: 'pi pi-fw pi-sign-in',
-                        to: '/auth/login'
-                    },
-                    {
-                        label: 'Error',
-                        icon: 'pi pi-fw pi-times-circle',
-                        to: '/auth/error'
-                    },
-                    {
-                        label: 'Access Denied',
-                        icon: 'pi pi-fw pi-lock',
-                        to: '/auth/access'
-                    }
-                ]
             }
         ]
     }

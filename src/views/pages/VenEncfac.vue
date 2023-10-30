@@ -3,13 +3,15 @@ import { FilterMatchMode } from 'primevue/api';
 import { ref, onMounted, onBeforeMount } from 'vue';
 import VenEncfacService from '@/service/VenEncfacService';
 import { useToast } from 'primevue/usetoast';
+import { useConfirm } from 'primevue/useconfirm';
 import { useRouter } from 'vue-router'; // Importa useRouter de vue-router
 const router = useRouter(); // Obtén el objeto router
-
+const showTextarea = ref(false);
 
 const clientes = ref(null);
 const dt = ref(null);
 const filters = ref({});
+const confirmPopup = useConfirm();
 
 
 const venEncfacService = new VenEncfacService();
@@ -106,7 +108,10 @@ const formatCurrency = (value) => {
                 >
                     <template #header>
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                            <h5 class="m-0">Administrar Ventas</h5>
+                            <h4 class="noto-sans-font">
+                                <i class="pi pi-fw pi-calculator mr-3" style="font-size: 1.8rem; color: #779ecb;"></i>
+                                <label>Administrar Ventas</label>
+                            </h4>
                             <span class="block mt-2 md:mt-0 p-input-icon-left">
                                 <i class="pi pi-search" />
                                 <InputText v-model="filters['global'].value" placeholder="Buscar..." />
@@ -114,45 +119,46 @@ const formatCurrency = (value) => {
                         </div>
                     </template>
 
-                    <Column field="encfacNumero" header="Número" :sortable="false" headerStyle="width:14%; min-width:10rem; ">
+                    <Column field="encfacNumero" header="NÚMERO" :sortable="false" headerStyle="width:14%; min-width:10rem; ">
                         <template #body="slotProps">
                             <span class="p-column-title">Num</span>
                             {{ slotProps.data.encfacNumero }}
                         </template>
                     </Column>
-                    <Column field="cliNombre" header="Nombre" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="cliNombre" header="NOMBRE" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Name</span>
                             {{ slotProps.data.cliNombre }}
                         </template>
                     </Column>
-                    <Column field="cliCodigo" header="Código" :sortable="false" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="cliCodigo" header="CÓDIGO" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Name</span>
                             {{ slotProps.data.cliCodigo }}
                         </template>
                     </Column>
-                    <Column field="vhcspcfPlaca" header="Placa" :sortable="false" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="vhcspcfPlaca" header="PLACA" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Name</span>
                             {{ slotProps.data.vhcspcfPlaca }}
                         </template>
                     </Column>
-                    <Column field="encfacFechaemision" header="Fecha" :sortable="false" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="encfacFechaemision" header="FECHA" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Cod</span>
                             {{ slotProps.data.encfacFechaemision }}
                         </template>
                     </Column>
-                    <Column field="encfacTotal" header="Total" :sortable="false" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="encfacTotal" header="TOTAL" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">tot</span>
                             {{ formatCurrency(slotProps.data.encfacTotal) }}
                         </template>
                     </Column>
                     <Column style="width: 15%">
-                        <template #header> Visualizar </template>
+                        <template #header> VISUALIZAR </template>
                         <template #body="slotProps">
+                            <ConfirmPopup></ConfirmPopup>
                             <Button icon="pi pi-search" type="button" class="p-button-rounded p-button mr-2" style="background-color: #2e78ba;" @click="goToVenDetfac(selectedYear, slotProps.data.encfacNumero, slotProps.data.vhcspcfPlaca)"></Button>
                         </template>
                     </Column>
@@ -164,4 +170,11 @@ const formatCurrency = (value) => {
 
 <style scoped lang="scss">
 @import '@/assets/demo/styles/badges.scss';
+.smile-button {
+    padding: 0.8rem 1.4rem;
+    background-image: url('/demo/images/login/smile.png');
+    background-size: 2rem 1.8rem; /* Establece el tamaño de la imagen de fondo */
+    background-repeat: no-repeat; /* Evita la repetición de la imagen */
+    background-position: center center; /* Centra la imagen en el botón */
+}
 </style>

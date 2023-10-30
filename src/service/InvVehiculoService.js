@@ -10,7 +10,7 @@ export default class InvVehiculoService {
             const response = await axios.get(`${this.baseUrl}InvVehiculo`);
             const objetosFiltrados = response.data.filter(objeto => {
                 const invCodigoInt = parseInt(objeto.invCodigo, 10);
-                return invCodigoInt >= 1 && invCodigoInt <= 14;
+                return invCodigoInt >= 1 && invCodigoInt <= 22;
             });
             return objetosFiltrados;
         } catch (error) {
@@ -24,7 +24,7 @@ export default class InvVehiculoService {
             const response = await axios.get(`${this.baseUrl}InvVehiculo`);
             const objetosFiltrados = response.data.filter(objeto => {
                 const invCodigoInt = parseInt(objeto.invCodigo, 10);
-                return invCodigoInt >= 15 && invCodigoInt <= 23;
+                return invCodigoInt >= 23 && invCodigoInt <= 32;
             });
             return objetosFiltrados;
         } catch (error) {
@@ -38,7 +38,7 @@ export default class InvVehiculoService {
             const response = await axios.get(`${this.baseUrl}InvVehiculo`);
             const objetosFiltrados = response.data.filter(objeto => {
                 const invCodigoInt = parseInt(objeto.invCodigo, 10);
-                return invCodigoInt >= 24 && invCodigoInt <= 27;
+                return invCodigoInt == 33;
             });
             return objetosFiltrados;
         } catch (error) {
@@ -50,17 +50,17 @@ export default class InvVehiculoService {
         try {
             const interiores = inventario.filter(objeto => {
                 const invCodigoInt = parseInt(objeto.invCodigo, 10);
-                return invCodigoInt >= 1 && invCodigoInt <= 14;
+                return invCodigoInt >= 1 && invCodigoInt <= 22;
             });
     
             const exteriores = inventario.filter(objeto => {
                 const invCodigoInt = parseInt(objeto.invCodigo, 10);
-                return invCodigoInt >= 15 && invCodigoInt <= 23;
+                return invCodigoInt >= 23 && invCodigoInt <= 32;
             });
     
             const accesorios = inventario.filter(objeto => {
                 const invCodigoInt = parseInt(objeto.invCodigo, 10);
-                return invCodigoInt >= 24 && invCodigoInt <= 27;
+                return invCodigoInt == 33;
             });
     
             return {

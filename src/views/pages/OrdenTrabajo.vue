@@ -161,12 +161,15 @@ const initFilters = () => {
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} clientes"
+                    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} Órdenes de Trabajo"
                     responsiveLayout="scroll"
                 >
                     <template #header >
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center" >
-                            <h5 class="m-0">Administrar Órdenes de Trabajo</h5>
+                            <h4 class="noto-sans-font">
+                                <i class="pi pi-fw pi-wrench mr-3" style="font-size: 1.8rem; color: #779ecb;"></i>
+                                <label>Administrar Órdenes de Trabajo</label>
+                            </h4>
                             <span class="block mt-2 md:mt-0 p-input-icon-left">
                                 <i class="pi pi-search" />
                                 <InputText v-model="filters['global'].value" placeholder="Buscar..." />
@@ -174,37 +177,37 @@ const initFilters = () => {
                         </div>
                     </template>
 
-                    <Column field="ordNumero" header="Número" :sortable="false" headerStyle="width:11%; min-width:10rem;">
+                    <Column field="ordNumero" header="NÚMERO" :sortable="false" headerStyle="width:11%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Code</span>
                             {{ slotProps.data.ordNumero }}
                         </template>
                     </Column>
-                    <Column field="cliNombre" header="Nombre" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="cliNombre" header="NOMBRE" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Name</span>
                             {{ slotProps.data.cliNombre }}
                         </template>
                     </Column>
-                    <Column field="cliCodigo" header="Código" :sortable="false" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="cliCodigo" header="CÓDIGO" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Category</span>
                             {{ slotProps.data.cliCodigo }}
                         </template>
                     </Column>
-                    <Column field="ordFecha" header="Fecha" :sortable="false" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="ordFecha" header="FECHA" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Category</span>
                             {{ slotProps.data.ordFecha }}
                         </template>
                     </Column>
-                    <Column field="ordPlaca" header="Placa" :sortable="false" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="ordPlaca" header="PLACA" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Category</span>
                             {{ slotProps.data.ordPlaca }}
                         </template>
                     </Column>
-                    <Column field="vehmarmodNombre" header="Marca" :sortable="false" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="vehmarmodNombre" header="MARCA" :sortable="false" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Category</span>
                             {{ slotProps.data.vehmarmodNombre }}
@@ -218,7 +221,7 @@ const initFilters = () => {
                     </Column>
                 </DataTable>
 
-                <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+                <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirmación" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                         <span v-if="cliente"

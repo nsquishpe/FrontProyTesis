@@ -83,11 +83,11 @@ const onLogoutClick = () => {
         <div class="layout-topbar-menu" :class="topbarMenuClasses">
             <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
                 <i class="pi pi-user"></i>
-                <span>Profile</span>
+                <span>NSQUISHPE</span>
             </button>
             <button @click="onLogoutClick()" class="p-link layout-topbar-button">
                 <i class="pi pi-power-off"></i>
-                <span>Logout</span>
+                <span>Cerrar Sesión</span>
             </button>
         </div>
     </div>

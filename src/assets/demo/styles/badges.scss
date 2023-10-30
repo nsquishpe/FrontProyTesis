@@ -43,8 +43,8 @@
 }
 
 .placa {
-    background: #2356A5;
-    color: #ffffff;
+    background: #E1F5FE;
+    color: black;
     
 }
 
@@ -101,3 +101,74 @@
         color: #694382;
     }
 }
+.field canvas {
+    width: 100%; /* Asegura que el canvas ocupe el 100% del ancho del contenedor */
+    height: 100%; /* Asegura que el canvas ocupe el 100% de la altura del contenedor */
+  }
+  :deep(.int .p-panel-header) {
+      background-color: #198bba; /* Azul */
+      border-color:#198bba;
+      color: #ffffff; /* Texto blanco */
+      font-size: 1.1em; 
+  }
+  :deep(.int .p-panel-content) {
+    border-color: #198bba;
+}
+  :deep(.ext .p-panel-header) {
+      background-color: #28a745; /* Verde */
+      border-color: #28a745;
+      color: #ffffff; /* Texto blanco */
+      font-size: 1.1em; 
+  }
+  :deep(.ext .p-panel-content) {
+    border-color: #28a745;
+}
+  :deep(.acs .p-panel-header) {
+      background-color: #FF902B; /* Amarillo */
+      border-color: #FF902B;
+      color: #ffffff; /* Texto blanco */
+      font-size: 1.1em; 
+  }
+  :deep(.acs .p-panel-content) {
+    border-color: #FF902B;
+}
+  .descrip {
+      font-weight: bold;
+  }
+  :deep(.p-calendar-button) {
+      background-color: #ff5733; /* Cambia el color de fondo del botón */
+      color: #ffffff; /* Cambia el color del texto del botón */
+      /* Otros estilos que desees aplicar al botón */
+  }
+  :deep(.p-autocomplete-dropdown) {
+    /* Estilos para el botón de tipo Dropdown */
+    /* Por ejemplo, cambia el fondo y color del texto */
+    background-color: rgb(57, 57, 68);
+    color: #ffffff;
+    border: none;
+  }
+  :deep(.p-autocomplete-dropdown:hover),
+  :deep(.p-autocomplete-dropdown:focus) {
+    /* Estilos para el botón de tipo Dropdown cuando se selecciona con el cursor */
+    background-color: #b6bcc2; /* Cambia el color de fondo al hacer hover o focus */
+  }
+  :deep(.p-datepicker-trigger) {
+    /* Estilos para el botón del calendario */
+    background-color: rgb(57, 57, 68);
+    color: #ffffff;
+    border: none;
+  }
+  :deep(.p-datepicker-trigger:hover),
+  :deep(.p-datepicker-trigger:focus) {
+    /* Estilos para el botón del calendario cuando se selecciona con el cursor o está enfocado */
+    background-color: #0056b3; /* Cambia el color de fondo al hacer hover o focus */
+  }
+  :deep(.p-knob-handle:active) {
+    /* Estilos para el componente Knob cuando se hace clic */
+    background-color: #007bff; /* Cambia el color de fondo cuando se hace clic */
+  }
+  
+  :deep(.p-knob-handle:focus) {
+    /* Estilos para el componente Knob cuando se enfoca */
+    background-color: #007bff; /* Cambia el color de fondo cuando se enfoca */
+  }
