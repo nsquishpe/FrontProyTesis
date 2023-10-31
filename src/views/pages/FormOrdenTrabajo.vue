@@ -251,56 +251,119 @@ const obtenerValoresSeleccionados = () => {
 
 /*****************************    CRUD    ********************************/
 const saveOrd = async () => {
-    submitted.value = true;
-    if (placa.value && selectedCliente.value.value && calendarValue.value) {
-        //CABECERA
-        const id = await ordTrabCabService.AsignarNumOrd(year);
-        const newCab = {
-            OrdNumero: id,
-            OrdAnio: year,
-            OrdFecha: convertirYFormatearFecha(calendarValue.value),
-            OrdObsv: observaciones.value,
-            CliCodigo: selectedCliente.value.value.cliCodigo,
-            CliNombre: selectedCliente.value.value.cliNombre,
-            OrdPlaca: placa.value,
-            OrdKm: km.value.toString(),
-            VehmarmodCodigo: selectedMarca.value.vehmarmodCodigo,
-            MaecolorCodigo: selectedColor.value.maecolorCodigo,
-        };
-        //SERVICIOS
-        const valserv = multiselectServicio.value;
-        const proxyValues = Object.values(valserv);
-        const servs = proxyValues.map(proxyObj => {
-            const objetoReal = {
-                serCodigo: proxyObj.serCodigo,
-                serDescrip: proxyObj.serDescrip
-            };
-            return objetoReal;
-        });
-        //INVENTARIO
-        const invs =  obtenerValoresSeleccionados();
-        console.log(invs);
-        invs.forEach(item => {
-            item.ordAnio = year;
-            item.ordNumero = newCab.OrdNumero;
-            item.detInvLinea = 1;
-        });
-        try {
-            const response1 = await ordTrabCabService.createCabOrden(newCab);
-            const response2 = await ordTrabDetSerService.createDetServ(newCab.OrdNumero, year, servs);
-            const response3 = await ordTrabDetInvService.createDetInv(newCab.OrdNumero, invs);
+    if(num!= null){  //Editar
+        const ord_cab = await ordTrabCabService.getCabById(selectedYearValue, num); 
+        if(ord_cab!=null){
+            if (placa.value && selectedCliente.value.value && calendarValue.value) {
+                const newCab = {
+                    OrdNumero: num,
+                    OrdAnio: year,
+                    OrdFecha: convertirYFormatearFecha(calendarValue.value),
+                    OrdObsv: observaciones.value,
+                    CliCodigo: ord_cab.cliCodigo,
+                    CliNombre: ord_cab.cliNombre,
+                    OrdPlaca: placa.value,
+                    OrdKm: km.value.toString(),
+                    VehmarmodCodigo: selectedMarca.value.vehmarmodCodigo,
+                    MaecolorCodigo: selectedColor.value.maecolorCodigo,
+                };
+                //SERVICIOS
+                const valserv = multiselectServicio.value;
+                const proxyValues = Object.values(valserv);
+                const servs = proxyValues.map(proxyObj => {
+                    const objetoReal = {
+                        serCodigo: proxyObj.serCodigo,
+                        serDescrip: proxyObj.serDescrip
+                    };
+                    return objetoReal;
+                });
+                //INVENTARIO
+                const invs =  obtenerValoresSeleccionados();
+                console.log(invs);
+                invs.forEach(item => {
+                    item.ordAnio = year;
+                    item.ordNumero = newCab.OrdNumero;
+                    item.detInvLinea = 1;
+                });
+                try {
+                const resact1 = await ordTrabCabService.updateCabOrden(newCab);
+                const resact2 = await ordTrabDetSerService.updateDetServ(newCab.OrdNumero, year, servs);
+                const resact3 = await ordTrabDetInvService.updateDetInv(newCab.OrdNumero, invs);
 
-            router.push({ name: 'ordenTrabajo'}); 
-            toast.add({ severity: 'success', summary: 'Exitoso', detail: 'Orden registrada con éxito', life: 3000 });
-            
-        } catch (error) {
-            // Manejar errores de la llamada API
-            console.error('Error en la solicitud API:', error);
+                toast.add({ severity: 'success', summary: 'Exitoso', detail: 'Orden Actualizada', life: 3000 });
+
+                setTimeout(() => {
+                    router.push({ name: 'ordenTrabajo' });
+                }, 500); // Espera 3000 milisegundos (3 segundos) antes de redirigir a la otra página
+
+                
+                } catch (error) {
+                    // Manejar errores de la llamada API
+                    console.error('Error en la solicitud API:', error);
+                    toast.add({ severity: 'error', summary: 'Error', detail: 'Error al actualizar la orden', life: 3000 });
+                }
+            }
+            else{
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al actualizar la orden', life: 3000 });
+            }
+        }
+
+    }
+    else{
+        submitted.value = true;
+        if (placa.value && selectedCliente.value.value && calendarValue.value) {
+            //CABECERA
+            const id = await ordTrabCabService.AsignarNumOrd(year);
+            const newCab = {
+                OrdNumero: id,
+                OrdAnio: year,
+                OrdFecha: convertirYFormatearFecha(calendarValue.value),
+                OrdObsv: observaciones.value,
+                CliCodigo: selectedCliente.value.value.cliCodigo,
+                CliNombre: selectedCliente.value.value.cliNombre,
+                OrdPlaca: placa.value,
+                OrdKm: km.value.toString(),
+                VehmarmodCodigo: selectedMarca.value.vehmarmodCodigo,
+                MaecolorCodigo: selectedColor.value.maecolorCodigo,
+            };
+            //SERVICIOS
+            const valserv = multiselectServicio.value;
+            const proxyValues = Object.values(valserv);
+            const servs = proxyValues.map(proxyObj => {
+                const objetoReal = {
+                    serCodigo: proxyObj.serCodigo,
+                    serDescrip: proxyObj.serDescrip
+                };
+                return objetoReal;
+            });
+            //INVENTARIO
+            const invs =  obtenerValoresSeleccionados();
+            console.log(invs);
+            invs.forEach(item => {
+                item.ordAnio = year;
+                item.ordNumero = newCab.OrdNumero;
+                item.detInvLinea = 1;
+            });
+            try {
+                const response1 = await ordTrabCabService.createCabOrden(newCab);
+                const response2 = await ordTrabDetSerService.createDetServ(newCab.OrdNumero, year, servs);
+                const response3 = await ordTrabDetInvService.createDetInv(newCab.OrdNumero, invs);
+
+                toast.add({ severity: 'success', summary: 'Exitoso', detail: 'Orden Registrada', life: 3000 });
+
+                setTimeout(() => {
+                    router.push({ name: 'ordenTrabajo' });
+                }, 500); // Espera 3000 milisegundos (3 segundos) antes de redirigir a la otra página
+                
+            } catch (error) {
+                // Manejar errores de la llamada API
+                console.error('Error en la solicitud API:', error);
+                toast.add({ severity: 'error', summary: 'Error', detail: 'Error al crear la orden', life: 3000 });
+            }
+        }
+        else{
             toast.add({ severity: 'error', summary: 'Error', detail: 'Error al crear la orden', life: 3000 });
         }
-    }
-   else{
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Error al crear la orden', life: 3000 });
     }
 };
 

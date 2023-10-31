@@ -57,6 +57,20 @@ export default class OrdTrabCabService {
             throw new Error('Error al crear el cliente.'); 
         }
     }
+
+    async updateCabOrden(ord) {
+        try {
+            console.log(ord);
+            // Realiza la llamada a la API para crear un nuevo cliente
+            const response = await axios.put(`${this.baseUrl}CabOrdenTrabajo`, ord);
+
+            // Devuelve la respuesta de la API en caso de éxito
+            return response.data;
+        } catch (error) {
+            console.error('Error al crear el cliente:', error);
+            throw new Error('Error al crear el cliente.'); 
+        }
+    }
     
     async deleteCabOrden(ord) {
         try {

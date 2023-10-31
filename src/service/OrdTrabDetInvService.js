@@ -26,16 +26,26 @@ export default class OrdTrabDetInvService {
         }
     }
     
-    async updateCliente(cliente) {
+    async updateDetInv(num, inv) {
         try {
-            // Realiza la llamada a la API para actualizar el cliente existente
-            const response = await axios.put(`${this.baseUrl}VenMaecliente`, cliente);
+            // Convierte el objeto `ser` a una cadena JSON
+            const serJSON = JSON.stringify(inv);
 
+            // Realiza la llamada a la API para crear un nuevo cliente
+            const response = await axios.put(`${this.baseUrl}DetOrdInventario`, serJSON, {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                params: {
+                    num: num
+                }
+            });
             // Devuelve la respuesta de la API en caso de éxito
+            console.log("creado");
             return response.data;
         } catch (error) {
-            console.error('Error al actualizar el cliente:', error);
-            throw new Error('Error al actualizar el cliente.'); 
+            console.error('Error al crear el cliente:', error.response.data);
+            throw new Error('Error al crear el cliente.');
         }
     }
 
