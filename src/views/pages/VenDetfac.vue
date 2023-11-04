@@ -9,7 +9,9 @@ import { useToast } from 'primevue/usetoast';
 const toast = useToast();
 const { anio, encfacNumero, vhcspcfPlaca } = defineProps(['anio', 'encfacNumero', 'vhcspcfPlaca']);
 
-const observaciones = ref(null);
+const garantia = ref(null);
+const fecha = ref(null);
+
 console.log("Año:", anio);
 console.log("Número de factura:", encfacNumero);
 console.log("Placa:", vhcspcfPlaca);
@@ -35,8 +37,11 @@ const encfac = ref({
     encfacFechaemision: '',
     encfacTotal: 0,
     encfacTotalneto: 0,
-    encfacValoriva: 0
+    encfacValoriva: 0,
+    encfacObsgarantia: ''
 });
+
+const observaciones = ref(encfac.value.encfacObsgarantia || '');
 
 onMounted(async () => {
   try {
@@ -46,6 +51,7 @@ onMounted(async () => {
       GetEncFac(),
       GetDetalles()
     ]);
+    observaciones.value = encfac.value.encfacObsgarantia;
     // Las llamadas a la API se han completado
     console.log('Llamadas a la API completadas');
   } catch (error) {
@@ -63,11 +69,13 @@ const GetAuto = async () => {
 };
 const GetEncFac = async () => {
     encfac.value = await venEncfacService.getVenEncfacById(anio, encfacNumero);
+    fecha.value = encfac.value.encfacFechaemision;
     // Formatear la fecha
     if (encfac.value.encfacFechaemision) {
         const fecha = new Date(encfac.value.encfacFechaemision);
         encfac.value.encfacFechaemision = fecha.toLocaleDateString(); // Formatea la fecha como 'MM/DD/YYYY' o 'DD/MM/YYYY' dependiendo del idioma del navegador
     }
+    console.log(encfac.value);
 };
 const GetDetalles = async () => {
     const response = await venDetfacService.getDetalles(anio, encfacNumero);
@@ -89,16 +97,26 @@ const openConfirmation = () => {
     displayConfirmation.value = true;
 };
 
-const closeConfirmation = (saved) => {
-    displayConfirmation.value = false;
-    if (saved && observaciones.value.trim() !== "") {
-        // Guardar el valor del textarea y mostrar el toast
-        guardarValorDelTextarea(observaciones.value);
-        mostrarToast();
+const closeConfirmation = async (saved) => {
+  displayConfirmation.value = false;
+  try {
+    if (saved && observaciones.value !== "") {
+      garantia.value = '1';
+      guardarValorDelTextarea(observaciones.value);
+    } else {
+      garantia.value = '0';
+      observaciones.value = '';
     }
-    else{
-        observaciones.value='';
-    }
+    encfac.value.encfacFechaemision =fecha;
+    encfac.value.encfacGarantia = garantia.value;
+    encfac.value.encfacObsgarantia = observaciones.value;
+    const response = await venEncfacService.updateVenEncfac(encfac.value);
+    console.log(encfac.value);
+    mostrarToast();
+  } catch (error) {
+    // Manejar errores 
+    console.error("Error al actualizar la orden:", error);
+  }
 };
 
 const guardarValorDelTextarea = (valor) => {
@@ -125,11 +143,11 @@ const mostrarToast = () => {
                         <Toast />
                         <Dialog header="Retorno Garantía" v-model:visible="displayConfirmation" :style="{ width: '350px' }" :modal="true">
                             <div class="flex align-items-center justify-content-center" style="width: 100%;">
-                                <Textarea  rows="5" v-model="observaciones"></Textarea>
+                                <Textarea rows="5" v-model="observaciones"></Textarea>
                             </div>
                             <template #footer>
-                                <Button label="No" icon="pi pi-times" @click="closeConfirmation(false)" class="p-button-text p-button-danger" autofocus />
-                                <Button label="Sí" icon="pi pi-check" @click="closeConfirmation(true)" class="p-button-text p-button-success"  />
+                                <Button  label="No" icon="pi pi-times" @click="closeConfirmation(false)" class="p-button-text p-button-danger" :autofocus="encfac.encfacGarantia === '0'" />
+                                <Button  label="Sí" icon="pi pi-check" @click="closeConfirmation(true)" class="p-button-text p-button-success" :autofocus="encfac.encfacGarantia === '1'" />
                             </template>
                         </Dialog>
                     </template>

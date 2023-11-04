@@ -48,4 +48,50 @@ export default class ClienteService {
             return null; // Devuelve null si no se encuentra el cliente o en caso de error
         }
     }
+    async updateVenEncfac(fac) {
+        try {
+            const response = await axios.put(`${this.baseUrl}VenEncfac`, fac);
+            // Devuelve la respuesta de la API en caso de éxito
+            return response.data;
+        } catch (error) {
+            console.error('Error al actualizar el cliente:', error);
+            throw new Error('Error al actualizar el cliente.'); 
+        }
+    }
+    async ConsultaGarantia(year) {
+        try {
+            // Realiza la llamada a la API para obtener los datos de VenEncfac
+            const venEncfacResponse = await axios.get(`${this.baseUrl}VenEncfac`, {
+                params: { anio: year }
+            });
+    
+            const venEncfacData = venEncfacResponse.data;
+    
+            if (venEncfacData.length === 0) {
+                return [];
+            }
+    
+            // Filtra los datos que cumplen con la condición venEncfac.EncfacGarantia = '1'
+            const filteredVenEncfacData = venEncfacData.filter((venEncfac) => venEncfac.encfacGarantia === '1');
+    
+            // Crea un array de promesas para las llamadas a VenVhcspcf en paralelo usando los datos filtrados
+            const promises = filteredVenEncfacData.map((venEncfac) =>
+                axios.get(`${this.baseUrl}VenVhcspcf/fac/${year}/${venEncfac.encfacNumero}`)
+                    .then((response) => {
+                        const venVhcspcfData = response.data;
+                        venEncfac.vhcspcfPlaca = venVhcspcfData.vhcspcfPlaca;
+                        return venEncfac;
+                    })
+            );
+    
+            // Ejecuta todas las promesas en paralelo y espera su resolución con Promise.all
+            const combinedData = await Promise.all(promises);
+    
+            return combinedData;
+        } catch (error) {
+            console.error('Error al combinar los datos:', error);
+            throw error;
+        }
+    }
+    
 }

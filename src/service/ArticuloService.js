@@ -50,5 +50,24 @@ export default class ArticuloService {
             throw error;
         }
     }
-    
+    async getReporteGeneral(anio, bodega, fecha) {
+        try {
+            const response = await axios.get(`${this.baseUrl}InvMaearticulo/ReporteGeneral?anio=${anio}&bodega=${bodega}&fecha=${fecha}`);
+            console.warn(response.data);
+            return response.data;
+        } catch (error) {
+            console.error('Error al obtener el kardex por ID:', error);
+            return []; 
+        }
+    }
+    async getReportePorGrupo(anio, bodega, fecha, grup) {
+        try {
+            const response = await axios.get(`${this.baseUrl}InvMaearticulo/ReportePorGrupo?anio=${anio}&bodega=${bodega}&fecha=${fecha}&grup=${grup}`);
+            console.warn(response.data);
+            return response.data;
+        } catch (error) {
+            console.error('Error al obtener el kardex por ID:', error);
+            return []; // Devuelve un array vacío en caso de error
+        }
+    }
 }
