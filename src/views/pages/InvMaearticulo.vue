@@ -183,10 +183,6 @@ const formatCurrency = (value) => {
     return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 
-const exportCSV = () => {
-    dt.value.exportCSV();
-};
-
 const initFilters = () => {
     filters.value = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS }

@@ -93,5 +93,41 @@ export default class ClienteService {
             throw error;
         }
     }
+    async getReporteGeneral(fechaInicio, fechaFin) {
+        try {
+          const response = await axios.get(`${this.baseUrl}VenEncfac/ReporteGeneral?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
+          const data = response.data.map(item => {
+            if (item.encfaC_ESTADO === 'P') {
+              item.encfaC_ESTADO = 'PENDIENTE';
+            } else {
+              item.encfaC_ESTADO = 'PAGADO';
+            }
+            return item;
+          });
+          console.warn(data);
+          return data;
+        } catch (error) {
+          console.error('Error al obtener el kardex por ID:', error);
+          return []; 
+        }
+    }      
+    async getReportePorCliente(fechaInicio, fechaFin, cliente) {
+        try {
+            const response = await axios.get(`${this.baseUrl}VenEncfac/ReportePorCliente?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}&clienteCodigo=${cliente}`);
+            const data = response.data.map(item => {
+            if (item.encfaC_ESTADO === 'P') {
+                item.encfaC_ESTADO = 'PENDIENTE';
+            } else {
+              item.encfaC_ESTADO = 'PAGADO';
+            }
+                return item;
+            });
+            console.warn(data);
+            return data;
+        } catch (error) {
+            console.error('Error al obtener el kardex por ID:', error);
+            return []; // Devuelve un array vacío en caso de error
+        }
+    }
     
 }

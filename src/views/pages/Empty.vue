@@ -20,64 +20,67 @@ const items = [
 const generatePDF = () => {
   const doc = new jsPDF();
 
-   // Logo de la empresa (ajustar tamaño)
-   const logo = '/demo/images/login/Logo.png'; // Ruta al logo
-   const logoWidth = 50; // Ancho del logo ajustado
-   const logoHeight = (logoWidth * 20) / 70; // Proporción del logo
-   doc.addImage(logo, 'PNG', 20, 10, logoWidth, logoHeight);
+  // Logo de la empresa (ajustar tamaño)
+  const logo = '/demo/images/login/Logo.png'; // Ruta al logo
+  const logoWidth = 50; // Ancho del logo ajustado
+  const logoHeight = (logoWidth * 20) / 70; // Proporción del logo
+  doc.addImage(logo, 'PNG', 20, 10, logoWidth, logoHeight);
 
-  // Título del reporte
-  doc.setFontSize(16);
-  doc.setTextColor(26, 42, 99); // Color del encabezado
-  doc.text('EXISTENCIA - PRECIOS', doc.internal.pageSize.getWidth() / 2, 35, 'center');
-  
-  // Fecha de corte
+  // Fecha y hora de emisión (alineado a la derecha del logo)
+  const currentDateTime = new Date().toLocaleString();
   doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0); // Color del texto normal
-  doc.text('Fecha de Corte: 20/10/2023', doc.internal.pageSize.getWidth() / 2, 40, 'center');
+  doc.setTextColor(0, 0, 0);
+  doc.text(currentDateTime, doc.internal.pageSize.getWidth() - 20, 20, 'right');
 
-  
-   // Agrupar los elementos por descripción
-   const groupedItems = {};
-  items.forEach(item => {
-    if (!groupedItems[item.description]) {
-      groupedItems[item.description] = [];
-    }
-    groupedItems[item.description].push(item);
+  // Título del reporte (centrado)
+  doc.setFontSize(16);
+  doc.setTextColor(26, 42, 99);
+  doc.text('FACTURAS EMITIDAS', doc.internal.pageSize.getWidth() / 2, 35, 'center');
+
+  // Fechas (centradas)
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  const fromDate = '30/08/2343';
+  const toDate = '30/08/2343';
+  const dateText = `Desde: ${fromDate}  Hasta: ${toDate}`;
+  const dateTextWidth = doc.getStringUnitWidth(dateText) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+  const startX = (doc.internal.pageSize.getWidth() - dateTextWidth) / 2;
+  doc.text(dateText, startX, 45);
+
+   // Calcular el total
+  const total = items.reduce((acc, item) => acc + item.quantity * item.price, 0);
+
+  // Encabezado de la tabla
+  const tableHeaders = [['Descripción', 'Cantidad', 'Precio unitario', 'Total']];
+
+  // Contenido de la tabla
+  const tableData = items.map(item => [item.description, item.quantity, item.price, item.quantity * item.price]);
+
+  // Generar la tabla
+  doc.autoTable({
+    head: tableHeaders,
+    body: tableData,
+    startY: 55,
+    styles: {
+      cellPadding: 2,
+      fontSize: 10,
+      valign: 'middle',
+      halign: 'center',
+    },
+    columnStyles: {
+      0: { halign: 'left' },
+    },
+    headStyles: {
+      fillColor: [190, 223, 251],
+      textColor: [0, 0, 0],
+    },
+    margin: { top: 60 }, // Ajustar el margen superior para evitar que la tabla se corte
   });
 
-  // Posición inicial de la tabla
-  let startY = 45;
+  // Mostrar la suma de la columna "Total" debajo de la tabla
 
-  // Generar tablas separadas por descripción
-  Object.keys(groupedItems).forEach(description => {
-    // Encabezado de la tabla
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text(description, doc.internal.pageSize.getWidth() / 2, startY + 10, 'center');
-
-    // Contenido de la tabla
-    doc.autoTable({
-      head: [['Descripción', 'Cantidad', 'Precio unitario', 'Total']],
-      body: groupedItems[description].map(item => [item.description, item.quantity, item.price, item.quantity * item.price]),
-      startY: startY + 20, // Ajusta el espacio superior según tus necesidades
-      styles: {
-        cellPadding: 2,
-        fontSize: 10,
-        valign: 'middle',
-        halign: 'center',
-      },
-      columnStyles: {
-        0: { halign: 'left' },
-      },
-      headStyles: {
-        fillColor: [190, 223, 251], 
-        textColor: [0, 0, 0], 
-      },
-    });
-    // Actualizar la posición inicial para la siguiente tabla
-    startY = doc.autoTable.previous.finalY + 10;
-  });
+  doc.setFontSize(12);
+  doc.text(`Total: ${total}`, 80, doc.lastAutoTable.finalY + 10);
 
   // Guardar el PDF con un nombre específico (puedes personalizar el nombre del archivo)
   const formattedDate = '30/08/2023';
