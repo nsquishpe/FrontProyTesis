@@ -15,4 +15,14 @@ export default class VehiculoService {
             return null; // Devuelve null si no se encuentra el cliente o en caso de error
         }
     }
+    async getMarcasRank(anio) {
+        try {
+            const response = await axios.get(`${this.baseUrl}VenVhcspcf/ReporteRankMarcas?anio=${anio}`);
+            console.warn(response.data);
+            return response.data;
+        } catch (error) {
+            console.error('Error al obtener el kardex por ID:', error);
+            return []; 
+        }
+    }
 }

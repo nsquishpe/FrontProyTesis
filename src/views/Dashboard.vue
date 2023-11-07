@@ -3,51 +3,162 @@ import { onMounted, reactive, ref, watch } from 'vue';
 import ProductService from '@/service/ProductService';
 import { useLayout } from '@/layout/composables/layout';
 import VenEncfacService from '@/service/VenEncfacService';
-import { useRouter } from 'vue-router'; // Importa useRouter de vue-router
-const router = useRouter(); // Obtén el objeto router
+import { useRouter } from 'vue-router';
+import ClienteService from '@/service/ClienteService';
+import VehiculoService from '@/service/VehiculoService';
 
-const { isDarkTheme } = useLayout();
+const clienteService = new ClienteService();
+const vehiculoService = new VehiculoService();
+const clientes = ref(null);
+const marcas = ref(null);
+const labels = ref(null);
+const valores = ref(null);
+const labels2 = ref(null);
+const valores2 = ref(null);
+const router = useRouter(); 
 const venEncfacService = new VenEncfacService();
 const year = '2023';
-
 const venEnfacs = ref(null);
-const products = ref(null);
-const lineData = reactive({
-    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-    datasets: [
-        {
-            label: 'First Dataset',
-            data: [65, 59, 80, 81, 56, 55, 40],
-            fill: false,
-            backgroundColor: '#2f4860',
-            borderColor: '#2f4860',
-            tension: 0.4
+
+//Select Anios
+const years = ref(['2018','2019','2020', '2021', '2022', '2023']); // Lista de años como cadenas
+const selectedYear =  ref({ label: '2023', value: '2023' }); // Valor por defecto del select como cadena
+const selectedYear2 =  ref({ label: '2023', value: '2023' }); // Valor por defecto del select como cadena
+const dropdownYears = years.value.map(year => ({ label: year, value: year }));
+
+const { layoutConfig } = useLayout();
+let documentStyle = getComputedStyle(document.documentElement);
+let textColor = documentStyle.getPropertyValue('--text-color');
+let textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
+let surfaceBorder = documentStyle.getPropertyValue('--surface-border');
+
+const pieData = ref(null);
+const barData = ref(null);
+
+const pieOptions = ref(null);
+const barOptions = ref(null);
+
+const setColorOptions = () => {
+    documentStyle = getComputedStyle(document.documentElement);
+    textColor = documentStyle.getPropertyValue('--text-color');
+    textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
+    surfaceBorder = documentStyle.getPropertyValue('--surface-border');
+};
+
+const setChart = () => {
+    barData.value = {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Número de Mantenimientos',
+                backgroundColor: documentStyle.getPropertyValue('--primary-500'),
+                borderColor: documentStyle.getPropertyValue('--primary-500'),
+                data: valores
+            }
+        ]
+    };
+
+    barOptions.value = {
+        indexAxis: 'y',  // Establecer el eje Y como el eje de índice
+        plugins: {
+            legend: {
+                labels: {
+                    fontColor: textColor
+                }
+            }
         },
-        {
-            label: 'Second Dataset',
-            data: [28, 48, 40, 19, 86, 27, 90],
-            fill: false,
-            backgroundColor: '#00bb7e',
-            borderColor: '#00bb7e',
-            tension: 0.4
+        scales: {
+            y: {  // Utilizar el eje Y para los nombres de clientes (etiquetas)
+                ticks: {
+                    color: textColorSecondary
+                },
+                grid: {
+                    color: surfaceBorder,
+                    drawBorder: false
+                }
+            },
+            x: {  // Utilizar el eje X para el número de facturas (valores)
+                ticks: {
+                    color: textColorSecondary,
+                    font: {
+                        weight: 500
+                    }
+                },
+                grid: {
+                    display: false,
+                    drawBorder: false
+                }
+            }
         }
-    ]
-});
-const items = ref([
-    { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-    { label: 'Remove', icon: 'pi pi-fw pi-minus' }
-]);
-const lineOptions = ref(null);
-const productService = new ProductService();
+    };
+
+    pieData.value = {
+        labels: labels2,
+        datasets: [
+            {
+                data: valores2,
+                backgroundColor: ['#AED581', '#64B5F6', '#FFB74D', '#9575CD', '#4DB6AC', '#FF8A65', '#7986CB', '#81C784', '#FFD54F', '#BA68C8'], 
+                hoverBackgroundColor: ['#8CBF41', '#1E88E5', '#FFA726', '#6A1B9A', '#00897B', '#EF6C00', '#5C6BC0', '#4CAF50', '#FFC107', '#8E24AA']
+            }
+        ]
+    };
+    pieOptions.value = {
+        plugins: {
+            legend: {
+                labels: {
+                    usePointStyle: true,
+                    color: textColor
+                }
+            }
+        }
+    };
+};
+
+watch(
+    layoutConfig.theme,
+    () => {
+        setColorOptions();
+        setChart();
+    },
+    { immediate: true }
+);
+
 
 onMounted(() => {
-    productService.getProductsSmall().then((data) => (products.value = data));
     TraerVenGarantia();
+    TraerRankCli();
+    TraerRankMarc();
 });
+
+
+const TraerRankCli = async () => {
+    const selectedYearValue = selectedYear.value.value; 
+    clientes.value = await clienteService.getClientesFrecs(selectedYearValue);
+
+    labels.value = clientes.value.map(cliente => cliente.clI_NOMBRE.toUpperCase());
+    valores.value = clientes.value.map(cliente => cliente.numerO_DE_FACTURAS);
+};
+
+const TraerRankMarc = async () => {
+    const selectedYearValue = selectedYear2.value.value; 
+    marcas.value = await vehiculoService.getMarcasRank(selectedYearValue);
+
+    const totalVehiculos = marcas.value.reduce((total, marca) => total + marca.cantidadVehiculosConMarca, 0);
+    labels2.value = marcas.value.map(marca => marca.marca.toUpperCase());
+    valores2.value = marcas.value.map(marca => Math.round((marca.cantidadVehiculosConMarca / totalVehiculos) * 100));
+    // Asegurar que la suma total de valores sea 100
+    const sumaValores = valores2.value.reduce((total, valor) => total + valor, 0);
+    const diferencia = 100 - sumaValores;
+    // Si hay una diferencia, ajustar el primer valor para que la suma total sea 100
+    if (diferencia !== 0) {
+        valores2.value[0] += diferencia;
+    }
+    console.log(labels2.value, valores2.value);
+};
 
 const TraerVenGarantia = async () => {
     venEnfacs.value = await venEncfacService.ConsultaGarantia(year);
-    // Formatear las fechas en cada objeto dentro de clientes.value utilizando map
+    // Formatear las fechas 
     venEnfacs.value = venEnfacs.value.map(fac => {
         if (fac.encfacFechaemision) {
             const fecha = new Date(fac.encfacFechaemision);
@@ -63,77 +174,7 @@ const goToVenDetfac = (anio, encfacNumero, vhcspcfPlaca) => {
   router.push({ name: 'venDetfac', params: { anio, encfacNumero, vhcspcfPlaca } });
 };
 
-const applyLightTheme = () => {
-    lineOptions.value = {
-        plugins: {
-            legend: {
-                labels: {
-                    color: '#495057'
-                }
-            }
-        },
-        scales: {
-            x: {
-                ticks: {
-                    color: '#495057'
-                },
-                grid: {
-                    color: '#ebedef'
-                }
-            },
-            y: {
-                ticks: {
-                    color: '#495057'
-                },
-                grid: {
-                    color: '#ebedef'
-                }
-            }
-        }
-    };
-};
 
-const applyDarkTheme = () => {
-    lineOptions.value = {
-        plugins: {
-            legend: {
-                labels: {
-                    color: '#ebedef'
-                }
-            }
-        },
-        scales: {
-            x: {
-                ticks: {
-                    color: '#ebedef'
-                },
-                grid: {
-                    color: 'rgba(160, 167, 181, .3)'
-                }
-            },
-            y: {
-                ticks: {
-                    color: '#ebedef'
-                },
-                grid: {
-                    color: 'rgba(160, 167, 181, .3)'
-                }
-            }
-        }
-    };
-};
-
-watch(
-    isDarkTheme,
-    (val) => {
-        if (val) {
-            applyDarkTheme();
-        } else {
-            applyLightTheme();
-        }
-    },
-    { immediate: true }
-);
 </script>
 
 <template>
@@ -142,7 +183,7 @@ watch(
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
                     <div>
-                        <span class="block text-500 font-medium mb-3">Órdenes de Trabajo</span>
+                        <span class="block text-500 font-medium mb-3">Total Órdenes de Trabajo</span>
                         <div class="text-900 font-medium text-xl">152</div>
                     </div>
                     <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem">
@@ -157,7 +198,7 @@ watch(
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
                     <div>
-                        <span class="block text-500 font-medium mb-3">Revenue</span>
+                        <span class="block text-500 font-medium mb-3">Total de Garantías Otorgadas</span>
                         <div class="text-900 font-medium text-xl">$2.100</div>
                     </div>
                     <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 2.5rem; height: 2.5rem">
@@ -201,88 +242,21 @@ watch(
             </div>
         </div>
         <div class="col-12 xl:col-6">
-            <div class="card">
-                <div class="flex justify-content-between align-items-center mb-5">
-                    <h5>Clientes más Frecuentes</h5>
-                    <div>
-                        <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" @click="$refs.menu2.toggle($event)"></Button>
-                        <Menu ref="menu2" :popup="true" :model="items"></Menu>
-                    </div>
+            <div class="card flex flex-column align-items-center">
+                <h5 class="text-left w-full ">Ranking Marcas</h5>
+                <div class="text-left w-full ">
+                    <label for="dropdownYears" style="font-weight: bold;color: black;font-size: 1.05em;" class="mr-1">Periodo: </label>
+                    <Dropdown v-model="selectedYear2" :options="dropdownYears" optionLabel="label" placeholder="Año" @focus="TraerRankMarc"  />
                 </div>
-                <ul class="list-none p-0 m-0">
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Space T-Shirt</span>
-                            <div class="mt-1 text-600">Clothing</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-orange-500 h-full" style="width: 50%"></div>
-                            </div>
-                            <span class="text-orange-500 ml-3 font-medium">%50</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Portal Sticker</span>
-                            <div class="mt-1 text-600">Accessories</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-cyan-500 h-full" style="width: 16%"></div>
-                            </div>
-                            <span class="text-cyan-500 ml-3 font-medium">%16</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Supernova Sticker</span>
-                            <div class="mt-1 text-600">Accessories</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-pink-500 h-full" style="width: 67%"></div>
-                            </div>
-                            <span class="text-pink-500 ml-3 font-medium">%67</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Wonders Notebook</span>
-                            <div class="mt-1 text-600">Office</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-green-500 h-full" style="width: 35%"></div>
-                            </div>
-                            <span class="text-green-500 ml-3 font-medium">%35</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Mat Black Case</span>
-                            <div class="mt-1 text-600">Accessories</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-purple-500 h-full" style="width: 75%"></div>
-                            </div>
-                            <span class="text-purple-500 ml-3 font-medium">%75</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Robots T-Shirt</span>
-                            <div class="mt-1 text-600">Clothing</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-teal-500 h-full" style="width: 40%"></div>
-                            </div>
-                            <span class="text-teal-500 ml-3 font-medium">%40</span>
-                        </div>
-                    </li>
-                </ul>
+                <Chart type="doughnut" :data="pieData" :options="pieOptions"></Chart>
+            </div>
+        </div>
+        <div class="col-12 xl:col-7">
+            <div class="card">
+                <h5>Clientes más frecuentes</h5>
+                <label for="dropdownYears" style="font-weight: bold;color: black;font-size: 1.05em;" class="mr-1">Periodo: </label>
+                <Dropdown v-model="selectedYear" :options="dropdownYears" optionLabel="label" placeholder="Año" @focus="TraerRankCli" />
+                <Chart type="bar" :data="barData" :options="barOptions"></Chart>
             </div>
         </div>
     </div>

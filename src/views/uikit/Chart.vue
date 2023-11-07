@@ -78,13 +78,20 @@ const setChart = () => {
         }
     };
 
+    const colores = [
+    documentStyle.getPropertyValue('--indigo-500'),
+    documentStyle.getPropertyValue('--purple-500'),
+    documentStyle.getPropertyValue('--teal-500'),
+    // ... añade más colores si es necesario
+    ];
+
     pieData.value = {
-        labels: ['A', 'B', 'C'],
+        labels: labels2.value,
         datasets: [
             {
-                data: [540, 325, 702],
-                backgroundColor: [documentStyle.getPropertyValue('--indigo-500'), documentStyle.getPropertyValue('--purple-500'), documentStyle.getPropertyValue('--teal-500')],
-                hoverBackgroundColor: [documentStyle.getPropertyValue('--indigo-400'), documentStyle.getPropertyValue('--purple-400'), documentStyle.getPropertyValue('--teal-400')]
+                data: valores2.value,
+                backgroundColor: colores.slice(0, valores2.value.length),
+                hoverBackgroundColor: colores.map(color => lightenDarkenColor(color, -20)), // Aplica un tono más claro al color de fondo al pasar el mouse
             }
         ]
     };
