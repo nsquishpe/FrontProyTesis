@@ -1,7 +1,11 @@
 <script setup>
 import { ref, onMounted, onBeforeMount  } from 'vue';
 import KardexService from '@/service/KardexService';
+import VenEncfacService from '@/service/VenEncfacService';
+import VehiculoService from '@/service/VehiculoService';
 import { FilterMatchMode } from 'primevue/api';
+import { useRouter } from 'vue-router';
+const router = useRouter(); 
 const { anio, artCodigo, artNombre, stock } = defineProps(['anio', 'artCodigo', 'artNombre', 'stock']);
 
 console.log("Año:", anio);
@@ -14,10 +18,12 @@ const salidas = ref(null);
 const compra = ref(null);
 const venta = ref(null);
 const filters = ref({});
-const layout = ref('grid');
-const selectButtonValue1 = ref(null);
+const layout = ref('list');
+const selectButtonValue1 =ref({ name: 'SALIDAS' });
 const selectButtonValues1 = ref([{ name: 'ENTRADAS' }, { name: 'SALIDAS' }]);
 const kardexService = new KardexService();
+const venEncfacService = new VenEncfacService();
+const vehiculoService = new VehiculoService();
 
 onMounted(async () => {
   try {
@@ -94,6 +100,23 @@ function convertirYFormatear(inputString) {
     return 'Entrada inválida';
   }
 }
+const goToVenDetfac = async (num, fecha) => {
+    fecha = fecha.split("/");
+    const anio = fecha[2];
+    const responseplac = await vehiculoService.getPlaca(anio, num);
+    const placa = responseplac.vhcspcfPlaca;
+    // Navegar a la página VenDetfac con parámetros
+    if (placa == null){
+        placa = 'No registrado';
+    }
+    const vhcspcfPlaca = placa;
+    const encfacNumero = num;
+    const op = 'kar';
+    router.push({ name: 'venDetfac', params: { anio, encfacNumero, vhcspcfPlaca, op, artCodigo, artNombre, stock } });
+};
+const regresar = () => {
+    router.push({ name: 'invMaearticulo'});
+};
 </script>
 
 <template>
@@ -104,7 +127,7 @@ function convertirYFormatear(inputString) {
             <div class="mb-5"> 
                 <Toolbar>
                     <template v-slot:start>
-                        <Button icon="pi pi-arrow-left" class="p-button-secondary mr-4" />
+                        <Button icon="pi pi-arrow-left" class="p-button-secondary mr-4" @click="regresar"/>
                         <SelectButton v-model="selectButtonValue1" :options="selectButtonValues1" optionLabel="name" dataKey="name" @change="onOptionChange" class="custom-select-button"/>
                     </template>
                     <template v-slot:end>
@@ -209,7 +232,7 @@ function convertirYFormatear(inputString) {
                         :headerStyle="{ width: '14%', minWidth: '10rem', backgroundColor: '#DAFFBB' }">
                         <template #body="slotProps">
                             <span class="p-column-title">Name</span>
-                            {{ slotProps.data.trnartReferencia }}
+                            <Button :label="slotProps.data.trnartReferencia" class="p-button-info p-button-text mr-2 mb-2"  @click="goToVenDetfac(slotProps.data.trnartReferencia, slotProps.data.trnartFechaes)" />
                         </template>
                     </Column>
                     <Column field="trnartCantidad"  
@@ -353,4 +376,8 @@ function convertirYFormatear(inputString) {
   /* Cambia el color de fondo del botón */
   background-color: #03BB85;
 }
+.p-button-info.p-button-text {
+  text-decoration: underline;
+}
+
 </style>

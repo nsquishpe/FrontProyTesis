@@ -31,6 +31,7 @@ const observaciones = ref(null);
 const placa = ref(null);
 const km = ref(null);
 const knobValue = ref(50);
+const num_orden = ref(null);
 
 //Manejo Clientes
 const selectedCliente = ref(null);
@@ -113,6 +114,7 @@ const ObtenerDatosEdicion = async (num, selectedYearValue) => {
     const acs = inventario.accesorios;
 
     //LLENAR CAMPOS
+    num_orden.value = ord_cab.ordNumero;
     calendarValue.value = new Date(ord_cab.ordFecha);
     observaciones.value = ord_cab.ordObsv;
     placa.value = ord_cab.ordPlaca;
@@ -149,6 +151,7 @@ const inicializarDatos = async () => {
             invVehiculoService.getExterior(),
             invVehiculoService.getAccesorios()
         ]);
+        const id = await ordTrabCabService.AsignarNumOrd(year);
 
         autoValueCliente.value = clientes;
         autoValueColor.value = colores;
@@ -156,7 +159,8 @@ const inicializarDatos = async () => {
         interior.value = interiorData;
         exterior.value = exteriorData;
         accesorios.value = accesoriosData;
-
+        num_orden.value = id;
+        
         setCanvas();
 
         if (canvas.value) {
@@ -445,6 +449,10 @@ const generatePDF = () => {
                 pdf.save('reporte.pdf');
  });
 };
+
+const regresar = () => {
+    router.push({ name: 'ordenTrabajo'});
+};
 </script>
 
 <template>
@@ -455,14 +463,14 @@ const generatePDF = () => {
                 <div class="section mb-4">
                     <Toolbar>
                     <template v-slot:start>
-                        <Button icon="pi pi-arrow-left" class="p-button-secondary mr-4" />
+                        <Button icon="pi pi-arrow-left" class="p-button-secondary mr-4"  @click="regresar" />
                         <!--- <Button label="Exportar PDF" icon="pi pi-file-pdf" class="p-button-text p-button-info" style="font-size: 1.2em;" @click="generatePDF" />-->
                     </template>
                     <template v-slot:end>
-                        <h2 class="noto-sans-font">
+                        <h3 class="noto-sans-font">
                             <i class="pi pi-wrench" style="font-size: 1.8rem; color: #779ecb;"></i>
-                           <label> Órden de Trabajo</label>
-                        </h2>
+                           <label> Nro. Orden de trabajo: {{num_orden }}</label>
+                        </h3>
                         <div class="section">
                     </div>
                     </template>

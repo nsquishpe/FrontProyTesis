@@ -9,8 +9,11 @@ import jsPDF from 'jspdf';
 import { applyPlugin } from 'jspdf-autotable';
 applyPlugin(jsPDF);
 
+const { periodo, texto } = defineProps(['periodo', 'texto']);
+
 const toast = useToast();
 const router = useRouter(); // Obtén el objeto router
+
 const showTextarea = ref(false);
 
 const clientes = ref(null);
@@ -55,6 +58,7 @@ onBeforeMount(() => {
 onMounted(() => {
     RefreshClientes();
     cargarClientes();
+    if(texto!= null){filters.value.global.value = texto;}
 });
 
 const goToVenDetfac = (anio, encfacNumero, vhcspcfPlaca) => {
@@ -63,7 +67,9 @@ const goToVenDetfac = (anio, encfacNumero, vhcspcfPlaca) => {
   if (vhcspcfPlaca == null){
     vhcspcfPlaca = 'No registrado';
   }
-  router.push({ name: 'venDetfac', params: { anio, encfacNumero, vhcspcfPlaca } });
+  const op = 'fac';
+  const filtro = filters.value.global.value;
+  router.push({ name: 'venDetfac', params: { anio, encfacNumero, vhcspcfPlaca, op, filtro } });
 };
 
 
@@ -131,6 +137,7 @@ const close = async () => {
         }
     }
     display.value = false;
+    selectedCliente.value = null;
 };
 
 /*****************************    REPORTE    ********************************/
@@ -311,7 +318,7 @@ const formatCurrency = (value) => {
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+                    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} Ventas"
                     responsiveLayout="scroll"
                 >
                     <template #header>

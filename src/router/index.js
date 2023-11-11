@@ -137,12 +137,13 @@ const router = createRouter({
                     component: () => import('@/views/pages/Crud.vue')
                 },
                 {
-                    path: '/pages/venEncfac',
+                    path: '/pages/venEncfac/:periodo?/:texto?',
                     name: 'venEncfac',
-                    component: () => import('@/views/pages/VenEncfac.vue')
+                    component: () => import('@/views/pages/VenEncfac.vue'),
+                    props: true
                 },
                 {
-                    path: '/pages/VenDetfac/:anio/:encfacNumero/:vhcspcfPlaca',
+                    path: '/pages/VenDetfac/:anio/:encfacNumero/:vhcspcfPlaca/:op?/:artCodigo?/:artNombre?/:stock?/:filtro?',
                     name: 'venDetfac',
                     component: () => import('@/views/pages/VenDetfac.vue'),
                     props: true

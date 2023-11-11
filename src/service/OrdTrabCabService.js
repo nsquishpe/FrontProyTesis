@@ -96,5 +96,53 @@ export default class OrdTrabCabService {
             return null; // Devuelve null si no se encuentra el cliente o en caso de error
         }
     }
+    async getNumeroOrdenes(year) {
+        try {
+            // Realiza la llamada a la API para obtener órdenes de trabajo
+            const ordenesResponse = await axios.get(`${this.baseUrl}CabOrdenTrabajo`, { params: { anio: year } });
+    
+            // Obtiene los datos de órdenes de trabajo
+            const ordenes = ordenesResponse.data;
+    
+            // Devuelve el número total de órdenes de trabajo
+            return ordenes.length;
+        } catch (error) {
+            console.error('Error al obtener los datos de órdenes de trabajo:', error);
+            return 0; // Devuelve 0 en caso de error o si no hay órdenes
+        }
+    } 
+    async getNumeroOrdenesDelMes() {
+        try {
+            // Obtén la fecha actual
+            const fechaActual = new Date();
+    
+            // Obtiene el mes actual en formato 'MM' (por ejemplo, '01' para enero)
+            const mesActual = (fechaActual.getMonth() + 1).toString().padStart(2, '0');
+    
+            // Obtiene el año actual en formato 'YYYY'
+            const anioActual = fechaActual.getFullYear().toString();
+    
+            // Realiza la llamada a la API para obtener órdenes de trabajo del mes actual
+            const ordenesResponse = await axios.get(`${this.baseUrl}CabOrdenTrabajo`, { params: { anio: anioActual } });
+    
+            // Obtiene los datos de órdenes de trabajo
+            const ordenes = ordenesResponse.data;
+    
+            // Filtra las órdenes de trabajo para obtener solo las del mes actual
+            const ordenesDelMes = ordenes.filter(orden => {
+                const fechaOrden = new Date(orden.ordFecha);
+                const mesOrden = (fechaOrden.getMonth() + 1).toString().padStart(2, '0');
+                const anioOrden = fechaOrden.getFullYear().toString();
+    
+                return mesOrden === mesActual && anioOrden === anioActual;
+            });
+    
+            // Devuelve el número total de órdenes de trabajo del mes actual
+            return ordenesDelMes.length;
+        } catch (error) {
+            console.error('Error al obtener los datos de órdenes de trabajo:', error);
+            return 0; // Devuelve 0 en caso de error o si no hay órdenes
+        }
+    }
     
 }

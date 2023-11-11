@@ -91,6 +91,7 @@ const close = async () => {
         generatePDF(reporteGeneral.value);
     }
     display.value = false;
+    selectedCategoriaReport.value = null;
 };
 
 

@@ -1,14 +1,15 @@
 <script setup>
 import { onMounted, reactive, ref, watch } from 'vue';
-import ProductService from '@/service/ProductService';
 import { useLayout } from '@/layout/composables/layout';
 import VenEncfacService from '@/service/VenEncfacService';
 import { useRouter } from 'vue-router';
 import ClienteService from '@/service/ClienteService';
 import VehiculoService from '@/service/VehiculoService';
+import OrdTrabCabService from '@/service/OrdTrabCabService';
 
 const clienteService = new ClienteService();
 const vehiculoService = new VehiculoService();
+const ordTrabCabService = new OrdTrabCabService();
 const clientes = ref(null);
 const marcas = ref(null);
 const labels = ref(null);
@@ -19,6 +20,12 @@ const router = useRouter();
 const venEncfacService = new VenEncfacService();
 const year = '2023';
 const venEnfacs = ref(null);
+const numOrd = ref(null);
+const numOrdmes = ref(null);
+const numGar = ref(null);
+const numGarmes = ref(null);
+const numCli = ref(null);
+const numClimes = ref(null);
 
 //Select Anios
 const years = ref(['2018','2019','2020', '2021', '2022', '2023']); // Lista de años como cadenas
@@ -128,6 +135,9 @@ onMounted(() => {
     TraerVenGarantia();
     TraerRankCli();
     TraerRankMarc();
+    TraerInfoOrdenes();
+    TraerInfoGarantia();
+    TraerInfoClientes()
 });
 
 
@@ -169,6 +179,21 @@ const TraerVenGarantia = async () => {
     console.log(venEnfacs.value);
 };
 
+const TraerInfoOrdenes = async () => {
+    numOrd.value = await ordTrabCabService.getNumeroOrdenes('2023');
+    numOrdmes.value = await ordTrabCabService.getNumeroOrdenesDelMes();
+};
+
+const TraerInfoGarantia = async () => {
+    numGar.value = await venEncfacService.getNumeroGarantia('2023');
+    numGarmes.value = await venEncfacService.getNumeroGarantiaMes('2023');
+};
+
+const TraerInfoClientes = async () => {
+    numCli.value = await venEncfacService.contarVentasUnicas('2023');
+    numClimes.value = await clienteService.getNumeroClientesMes('2023');
+};
+
 const goToVenDetfac = (anio, encfacNumero, vhcspcfPlaca) => {
   // Navegar a la página VenDetfac con parámetros
   router.push({ name: 'venDetfac', params: { anio, encfacNumero, vhcspcfPlaca } });
@@ -183,52 +208,52 @@ const goToVenDetfac = (anio, encfacNumero, vhcspcfPlaca) => {
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
                     <div>
-                        <span class="block text-500 font-medium mb-3">Total Órdenes de Trabajo</span>
-                        <div class="text-900 font-medium text-xl">152</div>
+                        <span class="block text-700 font-medium mb-3">Total Órdenes de Trabajo</span>
+                        <div class="text-900 font-medium text-xl">{{ numOrd }}</div>
                     </div>
                     <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-shopping-cart text-blue-500 text-xl"></i>
+                        <i class="pi pi-wrench text-blue-500 text-xl"></i>
                     </div>
                 </div>
-                <span class="text-green-500 font-medium">24 new </span>
-                <span class="text-500">since last visit</span>
+                <span class="text-green-500 font-medium">{{numOrdmes}} nuevos</span>
+                <span class="text-600"> este mes</span>
             </div>
         </div>
         <div class="col-12 lg:col-6 xl:col-4">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
                     <div>
-                        <span class="block text-500 font-medium mb-3">Total de Garantías Otorgadas</span>
-                        <div class="text-900 font-medium text-xl">$2.100</div>
+                        <span class="block text-700 font-medium mb-3">Total de Garantías Otorgadas</span>
+                        <div class="text-900 font-medium text-xl">{{numGar}}</div>
                     </div>
                     <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-map-marker text-orange-500 text-xl"></i>
+                        <i class="pi pi-verified text-orange-500 text-xl"></i>
                     </div>
                 </div>
-                <span class="text-green-500 font-medium">%52+ </span>
-                <span class="text-500">since last week</span>
+                <span class="text-green-500 font-medium">{{numGarmes}} nuevos</span>
+                <span class="text-600"> este mes</span>
             </div>
         </div>
         <div class="col-12 lg:col-6 xl:col-4">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
                     <div>
-                        <span class="block text-500 font-medium mb-3">Customers</span>
-                        <div class="text-900 font-medium text-xl">28441</div>
+                        <span class="block text-700 font-medium mb-3">Total de Clientes - 2023</span>
+                        <div class="text-900 font-medium text-xl">{{numCli}}</div>
                     </div>
                     <div class="flex align-items-center justify-content-center bg-cyan-100 border-round" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-inbox text-cyan-500 text-xl"></i>
+                        <i class="pi pi-users text-cyan-500 text-xl"></i>
                     </div>
                 </div>
-                <span class="text-green-500 font-medium">520 </span>
-                <span class="text-500">newly registered</span>
+                <span class="text-green-500 font-medium">{{numClimes }} nuevos</span>
+                <span class="text-600"> este mes</span>
             </div>
         </div>
 
         <div class="col-12 xl:col-6">
             <div class="card">
                 <h5>Retornos de vehículos por garantía</h5>
-                <DataTable :value="venEnfacs" :rows="5" :paginator="true" responsiveLayout="scroll">
+                <DataTable :value="venEnfacs" :rows="4" :paginator="true" responsiveLayout="scroll">
                     <Column field="encfacNumero" header="Número" :sortable="true" style="width: 25%"></Column>
                     <Column field="vhcspcfPlaca" header="Placa" :sortable="false" style="width: 25%"></Column>
                     <Column field="encfacObsgarantia" header="Observación" :sortable="false" style="width: 45%"></Column>
@@ -248,7 +273,7 @@ const goToVenDetfac = (anio, encfacNumero, vhcspcfPlaca) => {
                     <label for="dropdownYears" style="font-weight: bold;color: black;font-size: 1.05em;" class="mr-1">Periodo: </label>
                     <Dropdown v-model="selectedYear2" :options="dropdownYears" optionLabel="label" placeholder="Año" @focus="TraerRankMarc"  />
                 </div>
-                <Chart type="doughnut" :data="pieData" :options="pieOptions"></Chart>
+                <Chart type="doughnut" :data="pieData" :options="pieOptions" style="width: 62%; height: 62%;"></Chart>
             </div>
         </div>
         <div class="col-12 xl:col-7">

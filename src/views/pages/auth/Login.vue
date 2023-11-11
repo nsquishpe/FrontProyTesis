@@ -65,6 +65,7 @@ export default {
         )
         if (result.status == 200 && result.data == true) {
           localStorage.setItem("user-info", JSON.stringify(result.data))
+          localStorage.setItem('user', this.Usuidentificacion);
           this.$router.push({ name: 'dashboard' });
         }
         else {

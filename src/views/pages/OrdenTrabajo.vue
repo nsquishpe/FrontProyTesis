@@ -177,7 +177,7 @@ const initFilters = () => {
                         </div>
                     </template>
 
-                    <Column field="ordNumero" header="NÚMERO" :sortable="false" headerStyle="width:11%; min-width:10rem;">
+                    <Column field="ordNumero" header="NÚMERO" :sortable="true" headerStyle="width:11%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Code</span>
                             {{ slotProps.data.ordNumero }}

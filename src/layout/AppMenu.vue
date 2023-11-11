@@ -32,11 +32,6 @@ const model = ref([
                 label: 'Órdenes de Trabajo',
                 icon: 'pi pi-fw pi-wrench',
                 to: '/pages/ordenTrabajo'
-            },
-            {
-                label: 'Empty',
-                icon: 'pi pi-fw pi-circle-off',
-                to: '/pages/empty'
             }
         ]
     }

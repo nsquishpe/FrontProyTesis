@@ -93,6 +93,58 @@ export default class ClienteService {
             throw error;
         }
     }
+    async getNumeroGarantia(year) {
+        try {
+            // Realiza la llamada a la API para obtener los datos de VenEncfac
+            const venEncfacResponse = await axios.get(`${this.baseUrl}VenEncfac`, {
+                params: { anio: year }
+            });
+    
+            const venEncfacData = venEncfacResponse.data;
+    
+            if (venEncfacData.length === 0) {
+                return 0; // No hay órdenes de trabajo con garantía
+            }
+    
+            // Filtra los datos que cumplen con la condición venEncfac.EncfacGarantia = '1'
+            const ordenesConGarantia = venEncfacData.filter((venEncfac) => venEncfac.encfacGarantia === '1');
+    
+            // Devuelve el número total de órdenes de trabajo con garantía
+            return ordenesConGarantia.length;
+        } catch (error) {
+            console.error('Error al obtener los datos de órdenes de trabajo con garantía:', error);
+            throw error;
+        }
+    } 
+    async getNumeroGarantiaMes(year) {
+        try {
+            // Obtén la fecha actual
+            const fechaActual = new Date();
+    
+            // Realiza la llamada a la API para obtener los datos de VenEncfac
+            const venEncfacResponse = await axios.get(`${this.baseUrl}VenEncfac`, {
+                params: { anio: year }
+            });
+    
+            const venEncfacData = venEncfacResponse.data;
+    
+            if (venEncfacData.length === 0) {
+                return 0; // No hay órdenes de trabajo con garantía
+            }
+    
+            // Filtra los datos que cumplen con la condición venEncfac.EncfacGarantia = '1'
+            const ordenesConGarantia = venEncfacData.filter((venEncfac) => 
+                venEncfac.encfacGarantia === '1' && 
+                new Date(venEncfac.encfacFechaautFe).getMonth() === fechaActual.getMonth()
+            );
+    
+            // Devuelve el número total de órdenes de trabajo con garantía del mes actual
+            return ordenesConGarantia.length;
+        } catch (error) {
+            console.error('Error al obtener los datos de órdenes de trabajo con garantía:', error);
+            throw error;
+        }
+    }       
     async getReporteGeneral(fechaInicio, fechaFin) {
         try {
           const response = await axios.get(`${this.baseUrl}VenEncfac/ReporteGeneral?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
@@ -129,5 +181,34 @@ export default class ClienteService {
             return []; // Devuelve un array vacío en caso de error
         }
     }
+    async contarVentasUnicas(year) {
+        try {
+            // Realiza la llamada a la API para obtener los datos de VenEncfac
+            const venEncfacResponse = await axios.get(`${this.baseUrl}VenEncfac`, {
+                params: { anio: year }
+            });
+    
+            const venEncfacData = venEncfacResponse.data;
+    
+            if (venEncfacData.length === 0) {
+                return 0;  // Retorna directamente el total de clientes
+            }
+    
+            // Crear un conjunto para mantener un registro de los clientes únicos
+            const clientesUnicos = new Set();
+    
+            // Iterar sobre los datos de VenEncfac y agregar CliCodigo al conjunto
+            venEncfacData.forEach((venEncfac) => {
+                clientesUnicos.add(venEncfac.cliCodigo);
+            });
+    
+            // Devuelve el total de clientes
+            return clientesUnicos.size;
+        } catch (error) {
+            console.error('Error al obtener los datos de VenEncfac:', error);
+            throw error;
+        }
+    }
+    
     
 }

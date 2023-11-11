@@ -122,7 +122,7 @@ const saveCliente = async () => {
       submitted.value = false;
     } catch (error) {
       console.error('Error al guardar el cliente:', error);
-      toast.add({ severity: 'error', summary: 'Error', detail: 'Error al guardar el cliente', life: 3000 });
+      toast.add({ severity: 'error', summary: 'Error', detail: 'Error al guardar el Cliente', life: 3000 });
     }
   }
 };

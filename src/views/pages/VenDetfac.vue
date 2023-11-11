@@ -5,9 +5,11 @@ import VenEncfacService from '@/service/VenEncfacService';
 import VenDetfacService from '@/service/VenDetfacService';
 import { FilterMatchMode } from 'primevue/api';
 import { useToast } from 'primevue/usetoast';
+import { useRouter } from 'vue-router';
+const router = useRouter(); 
 
 const toast = useToast();
-const { anio, encfacNumero, vhcspcfPlaca } = defineProps(['anio', 'encfacNumero', 'vhcspcfPlaca']);
+const { anio, encfacNumero, vhcspcfPlaca, op, artCodigo, artNombre, stock, filtro  } = defineProps(['anio', 'encfacNumero', 'vhcspcfPlaca', 'op', 'artCodigo', 'artNombre', 'stock', 'filtro']);
 
 const garantia = ref(null);
 const fecha = ref(null);
@@ -128,6 +130,17 @@ const mostrarToast = () => {
     // Lógica para mostrar un toast con el mensaje proporcionado
     toast.add({ severity: 'success', summary: 'Exitoso', detail: 'Garantía Actualizada', life: 3000 });
 };
+
+const regresar = () => {
+    if(op == 'fac'){
+        const periodo = anio;
+        const texto = filtro;
+        router.push({ name: 'venEncfac', params: { periodo, texto }});   
+    }
+    else{
+        router.push({ name: 'invKardex', params: { anio, artCodigo, artNombre, stock } }); 
+    }
+};
 </script>
 
 
@@ -138,7 +151,7 @@ const mostrarToast = () => {
     <div class="card">
       <Toolbar class="mb-0.5">
                     <template v-slot:start>
-                        <Button icon="pi pi-arrow-left" class="p-button-secondary mr-2" />
+                        <Button icon="pi pi-arrow-left" class="p-button-secondary mr-2" @click="regresar"/>
                         <Button label="Garantía"  icon="pi pi pi-verified" class="p-button-success" @click="openConfirmation" />
                         <Toast />
                         <Dialog header="Retorno Garantía" v-model:visible="displayConfirmation" :style="{ width: '350px' }" :modal="true">
